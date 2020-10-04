@@ -17,7 +17,7 @@ root = Root(full_system = False)
 
 # Create an instantiation of the simobject you created
 root.hello = HybObject()
-
+root.hello.time_to_wait='2us'
 # instantiate all of the objects we've created above
 m5.instantiate()
 print("--------------------------------------------------------------------------")

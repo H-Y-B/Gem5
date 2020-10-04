@@ -8,8 +8,10 @@ class HybObject : public SimObject
 {
   private:
     void processEvent();
-    EventFunctionWrapper event;
-    
+    EventWrapper<HybObject, &HybObject::processEvent> event;
+
+    std::string myName;
+
     Tick latency;
     int timesLeft;
 
