@@ -6,8 +6,16 @@
 
 class HybObject : public SimObject
 {
+  private:
+    void processEvent();
+    EventFunctionWrapper event;
+    
+    Tick latency;
+    int timesLeft;
+
   public:
     HybObject(HybObjectParams *p);
+    void startup();
 };
 
 #endif // HYB_OBJECT_HH
