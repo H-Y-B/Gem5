@@ -1,0 +1,5 @@
+Import('*')
+
+SimObject('HybDebug.py')
+Source('hyb_debug.cc')
+DebugFlag('hybdebug')
