@@ -37,9 +37,9 @@ system.memobj.mem_side = system.membus.slave
 
 # create the interrupt controller for the CPU and connect to the membus
 system.cpu.createInterruptController()
-system.cpu.interrupts[0].pio = system.membus.master
-system.cpu.interrupts[0].int_master = system.membus.slave
-system.cpu.interrupts[0].int_slave = system.membus.master
+#system.cpu.interrupts[0].pio = system.membus.master
+#system.cpu.interrupts[0].int_master = system.membus.slave
+#system.cpu.interrupts[0].int_slave = system.membus.master
 
 # Create a DDR3 memory controller and connect it to the membus
 system.mem_ctrl = DDR3_1600_8x8()
@@ -54,8 +54,7 @@ process = Process()
 # Set the command
 # grab the specific path to the binary
 thispath = os.path.dirname(os.path.realpath(__file__))
-binpath = os.path.join(thispath, '../../../',
-                       'tests/test-progs/hello/bin/riscv/linux/hello')
+binpath = os.path.join(thispath, '../../', 'tests/test-progs/hello/bin/riscv/linux/hello')
 # cmd is a list which begins with the executable (like argv)
 process.cmd = [binpath]
 # Set the cpu to use the process as its workload and create thread contexts
