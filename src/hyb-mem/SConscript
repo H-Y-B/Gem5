@@ -3,4 +3,4 @@ Import('*')
 SimObject('HybMem.py')
 Source('hyb_mem.cc')
 
-DebugFlag('SimpleMemobj', "For Learning gem5 Part 2.")
+DebugFlag('HybMem', "DebugFlag : HybMem")
