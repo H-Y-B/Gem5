@@ -305,8 +305,8 @@ class BaseCache : public ClockedObject
 
     };
 
-    CpuSidePort cpuSidePort;
-    MemSidePort memSidePort;
+    CpuSidePort cpuSidePort; //和CPU的连接端口
+    MemSidePort memSidePort; //和MEM的连接端口
 
   protected:
 
@@ -836,19 +836,19 @@ class BaseCache : public ClockedObject
     Tick nextQueueReadyTime() const;
 
     /** Block size of this cache */
-    const unsigned blkSize;
+    const unsigned blkSize;      //block 大小
 
     /**
      * The latency of tag lookup of a cache. It occurs when there is
      * an access to the cache.
      */
-    const Cycles lookupLatency;
+    const Cycles lookupLatency;  //标签查找延迟
 
     /**
      * The latency of data access of a cache. It occurs when there is
      * an access to the cache.
      */
-    const Cycles dataLatency;
+    const Cycles dataLatency;    //数据访问延迟
 
     /**
      * This is the forward latency of the cache. It occurs when there
@@ -858,14 +858,14 @@ class BaseCache : public ClockedObject
     const Cycles forwardLatency;
 
     /** The latency to fill a cache block */
-    const Cycles fillLatency;
+    const Cycles fillLatency;     //填充延迟
 
     /**
      * The latency of sending reponse to its upper level cache/core on
      * a linefill. The responseLatency parameter captures this
      * latency.
      */
-    const Cycles responseLatency;
+    const Cycles responseLatency;  //miss后的访问延迟
 
     /**
      * Whether tags and data are accessed sequentially.

@@ -76,13 +76,13 @@ class BaseSetAssoc : public BaseTags
     unsigned allocAssoc;
 
     /** The cache blocks. */
-    std::vector<CacheBlk> blks;
+    std::vector<CacheBlk> blks;  //一个set中有 多个 block
 
     /** Whether tags and data are accessed sequentially. */
     const bool sequentialAccess;
 
     /** Replacement policy */
-    BaseReplacementPolicy *replacementPolicy;
+    BaseReplacementPolicy *replacementPolicy;  //替换策略
 
   public:
     /** Convenience typedef. */

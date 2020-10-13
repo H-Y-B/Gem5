@@ -155,7 +155,7 @@ class Cache : public BaseCache
 
   public:
     /** Instantiates a basic cache object. */
-    Cache(const CacheParams *p);
+    Cache(const CacheParams *p);//构造方法
 
     /**
      * Take an MSHR, turn it into a suitable downstream packet, and

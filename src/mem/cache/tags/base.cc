@@ -56,11 +56,16 @@
 #include "sim/system.hh"
 
 BaseTags::BaseTags(const Params *p)
-    : ClockedObject(p), blkSize(p->block_size), blkMask(blkSize - 1),
-      size(p->size), lookupLatency(p->tag_latency),
-      system(p->system), indexingPolicy(p->indexing_policy),
+    : ClockedObject(p), 
+      blkSize(p->block_size), 
+      blkMask(blkSize - 1),
+      size(p->size),  //cache的大小
+      lookupLatency(p->tag_latency),
+      system(p->system), 
+      indexingPolicy(p->indexing_policy),
       warmupBound((p->warmup_percentage/100.0) * (p->size / p->block_size)),
-      warmedUp(false), numBlocks(p->size / p->block_size),
+      warmedUp(false), 
+      numBlocks(p->size / p->block_size), //cache的大小 / cahceblock的大小
       dataBlks(new uint8_t[p->size]), // Allocate data storage in one big chunk
       stats(*this)
 {

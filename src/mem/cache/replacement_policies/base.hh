@@ -42,6 +42,7 @@ typedef std::vector<ReplaceableEntry*> ReplacementCandidates;
 
 /**
  * A common base class of cache replacement policy objects.
+ * 基本的替换算法
  */
 class BaseReplacementPolicy : public SimObject
 {

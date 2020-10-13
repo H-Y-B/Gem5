@@ -78,13 +78,13 @@ class MemCmd
     enum Command
     {
         InvalidCmd,
-        ReadReq,
-        ReadResp,
+        ReadReq,        //读请求
+        ReadResp,       //读响应
         ReadRespWithInvalidate,
-        WriteReq,
-        WriteResp,
-        WritebackDirty,
-        WritebackClean,
+        WriteReq,        //写请求
+        WriteResp,       //写响应
+        WritebackDirty,  //写回-dirty
+        WritebackClean,  //写回-clean
         WriteClean,            // writes dirty data below without evicting
         CleanEvict,
         SoftPFReq,

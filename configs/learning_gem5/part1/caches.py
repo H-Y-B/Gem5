@@ -56,7 +56,7 @@ class L1Cache(Cache):
     mshrs = 4
     tgts_per_mshr = 20
 
-    def __init__(self, options=None):
+    def __init__(self, options=None): #构造函数
         super(L1Cache, self).__init__()
         pass
 

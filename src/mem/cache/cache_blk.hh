@@ -88,7 +88,7 @@ class CacheBlk : public ReplaceableEntry
     uint32_t task_id;
 
     /** Data block tag value. */
-    Addr tag;
+    Addr tag;  //block中的tag
     /**
      * Contains a copy of the data in this block for easy access. This is used
      * for efficient execution when the data could be actually stored in
@@ -102,7 +102,7 @@ class CacheBlk : public ReplaceableEntry
     typedef unsigned State;
 
     /** The current status of this block. @sa CacheBlockStatusBits */
-    State status;
+    State status;  //各个位 对应 枚举类型 CacheBlkStatusBits
 
     /**
      * Which curTick() will this block be accessible. Its value is only
@@ -453,7 +453,7 @@ class TempCacheBlk final : public CacheBlk
      */
     TempCacheBlk(unsigned size) : CacheBlk()
     {
-        data = new uint8_t[size];
+        data = new uint8_t[size]; //申请block
     }
     TempCacheBlk(const TempCacheBlk&) = delete;
     TempCacheBlk& operator=(const TempCacheBlk&) = delete;

@@ -33,6 +33,7 @@
 
 #include "params/LRURP.hh"
 
+//构造方法
 LRURP::LRURP(const Params *p)
     : BaseReplacementPolicy(p)
 {

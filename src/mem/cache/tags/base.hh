@@ -71,11 +71,11 @@ class BaseTags : public ClockedObject
 {
   protected:
     /** The block size of the cache. */
-    const unsigned blkSize;
+    const unsigned blkSize; //cahceblock的大小  (Byte)
     /** Mask out all bits that aren't part of the block offset. */
     const Addr blkMask;
     /** The size of the cache. */
-    const unsigned size;
+    const unsigned size;    //cache的大小 (Byte)
     /** The tag lookup latency of the cache. */
     const Cycles lookupLatency;
 
@@ -94,7 +94,7 @@ class BaseTags : public ClockedObject
     bool warmedUp;
 
     /** the number of blocks in the cache */
-    const unsigned numBlocks;
+    const unsigned numBlocks;             //cache中block的个数
 
     /** The data blocks, 1 per cache block. */
     std::unique_ptr<uint8_t[]> dataBlks;

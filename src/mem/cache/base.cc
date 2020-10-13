@@ -73,7 +73,7 @@ BaseCache::CacheSlavePort::CacheSlavePort(const std::string &_name,
 {
 }
 
-BaseCache::BaseCache(const BaseCacheParams *p, unsigned blk_size)
+BaseCache::BaseCache(const BaseCacheParams *p, unsigned blk_size)//block size
     : ClockedObject(p),
       cpuSidePort (p->name + ".cpu_side", this, "CpuSidePort"),
       memSidePort(p->name + ".mem_side", this, "MemSidePort"),
