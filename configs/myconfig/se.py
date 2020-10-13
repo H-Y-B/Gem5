@@ -77,15 +77,18 @@ def get_processes(options):
         return multiprocesses, idx
     else:
         return multiprocesses, 1
+#end def get_processes(options):
+
 
 
 parser = optparse.OptionParser()
-Options.addCommonOptions(parser)
+Options.addCommonOptions(parser) #向对象parser中增加option
 Options.addSEOptions(parser)
 
 if '--ruby' in sys.argv:
     Ruby.define_options(parser)
 
+#参数分解
 (options, args) = parser.parse_args()
 
 if args:
