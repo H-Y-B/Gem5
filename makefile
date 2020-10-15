@@ -6,6 +6,11 @@ riscv:
 
 riscv-hello:
 	./build/RISCV/gem5.opt ./configs/myconfig/se.py -c ./tests/test-progs/hello/bin/riscv/linux/hello
+riscv-hello-o3-pipeline:
+	./build/RISCV/gem5.opt --debug-flags=O3PipeView --debug-start=10000 --debug-file=trace.out ./configs/myconfig/se.py --cpu-type=DerivO3CPU --caches -c ./tests/test-progs/hello/bin/riscv/linux/hello
+o3-pipeview:
+	util/o3-pipeview.py -c 500 -o pipeview.out --color m5out/trace.out
+	#less -r pipeview.out
 
 clean:
 	rm -rf build/
