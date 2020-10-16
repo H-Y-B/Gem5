@@ -199,6 +199,7 @@ class Fetch1 : public Named
     /** Interface to reserve space in the next stage */
     std::vector<InputBuffer<ForwardLineData>> &nextStageReserve;
 
+	//与icahce的接口
     /** IcachePort to pass to the CPU.  Fetch1 is the only module that uses
      *  it. */
     IcachePort icachePort;

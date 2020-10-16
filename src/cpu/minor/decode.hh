@@ -64,9 +64,9 @@ class Decode : public Named
     MinorCPU &cpu;
 
     /** Input port carrying macro instructions from Fetch2 */
-    Latch<ForwardInstData>::Output inp;
+    Latch<ForwardInstData>::Output inp;//F2->inp(指令)
     /** Output port carrying micro-op decomposed instructions to Execute */
-    Latch<ForwardInstData>::Input out;
+    Latch<ForwardInstData>::Input out; //out->Exe
 
     /** Interface to reserve space in the next stage */
     std::vector<InputBuffer<ForwardInstData>> &nextStageReserve;
@@ -136,7 +136,7 @@ class Decode : public Named
      *  decode from. */
     ThreadID getScheduledThread();
   public:
-    Decode(const std::string &name,
+    Decode(const std::string &name,//译码构造方法
         MinorCPU &cpu_,
         MinorCPUParams &params,
         Latch<ForwardInstData>::Output inp_,

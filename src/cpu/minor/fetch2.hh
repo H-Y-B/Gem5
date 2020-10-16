@@ -76,7 +76,7 @@ class Fetch2 : public Named
     Latch<ForwardInstData>::Input out;
 
     /** Interface to reserve space in the next stage */
-    std::vector<InputBuffer<ForwardInstData>> &nextStageReserve;
+    std::vector<InputBuffer<ForwardInstData>> &nextStageReserve;//执行阶段的InputBuffer
 
     /** Width of output of this stage/input of next in instructions */
     unsigned int outputWidth;

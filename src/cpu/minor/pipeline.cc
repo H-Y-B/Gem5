@@ -129,6 +129,8 @@ Pipeline::minorTrace() const
 void
 Pipeline::evaluate()
 {
+//in the reverse order
+//because (the updates from the later stage of the pipeline) should be visible to (the earlier stages of the pipeline).
     /* Note that it's important to evaluate the stages in order to allow
      *  'immediate', 0-time-offset TimeBuffer activity to be visible from
      *  later stages to earlier ones in the same cycle */

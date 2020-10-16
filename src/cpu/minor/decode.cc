@@ -43,6 +43,7 @@
 namespace Minor
 {
 
+//译码-构造方法
 Decode::Decode(const std::string &name,
     MinorCPU &cpu_,
     MinorCPUParams &params,
@@ -89,6 +90,7 @@ Decode::getInput(ThreadID tid)
     }
 }
 
+//弹出 指令
 void
 Decode::popInput(ThreadID tid)
 {
@@ -321,6 +323,8 @@ Decode::getScheduledThread()
    return InvalidThreadID;
 }
 
+
+//译码阶段 是否 排空
 bool
 Decode::isDrained()
 {

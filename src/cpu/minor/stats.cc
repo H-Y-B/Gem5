@@ -40,6 +40,7 @@
 namespace Minor
 {
 
+//构造方法
 MinorStats::MinorStats()
 { }
 

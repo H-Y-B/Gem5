@@ -181,10 +181,10 @@ class MinorFUPool : public SimObject
   public:
     std::vector<MinorFU *> funcUnits;
 
-  public:
+  public://构造方法
     MinorFUPool(const MinorFUPoolParams *params) :
         SimObject(params),
-        funcUnits(params->funcUnits)
+        funcUnits(params->funcUnits)//py参数
     { }
 };
 

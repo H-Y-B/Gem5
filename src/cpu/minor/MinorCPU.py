@@ -115,6 +115,8 @@ class MinorFU(SimObject):
         "list of FU indices from which this FU can't receive and early"
         " (forwarded) result")
 
+
+# define function units and what operations they can perform 
 class MinorFUPool(SimObject):
     type = 'MinorFUPool'
     cxx_header = "cpu/minor/func_unit.hh"
@@ -264,7 +266,8 @@ class MinorCPU(BaseCPU):
     executeBranchDelay = Param.Cycles(1,
         "Delay from Execute deciding to branch and Fetch1 reacting"
         " (1 means next cycle)")
-
+    
+    # define function units and what operations they can perform 
     executeFuncUnits = Param.MinorFUPool(MinorDefaultFUPool(),
         "FUlines for this processor")
 

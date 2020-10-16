@@ -45,6 +45,8 @@
 #include "debug/MinorCPU.hh"
 #include "debug/Quiesce.hh"
 
+
+//构造方法实现
 MinorCPU::MinorCPU(MinorCPUParams *params) :
     BaseCPU(params),
     threadPolicy(params->threadPolicy)

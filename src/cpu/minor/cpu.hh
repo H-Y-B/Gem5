@@ -118,7 +118,7 @@ class MinorCPU : public BaseCPU
     Port &getInstPort() override;
 
   public:
-    MinorCPU(MinorCPUParams *params);
+    MinorCPU(MinorCPUParams *params);//构造方法
 
     ~MinorCPU();
 
@@ -129,7 +129,7 @@ class MinorCPU : public BaseCPU
     void wakeup(ThreadID tid) override;
 
     /** Processor-specific statistics */
-    Minor::MinorStats stats;
+    Minor::MinorStats stats;//统计信息
 
     /** Stats interface from SimObject (by way of BaseCPU) */
     void regStats() override;

@@ -78,12 +78,19 @@ class Pipeline : public Ticked
     Latch<BranchData> f2ToF1;
     Latch<ForwardInstData> f2ToD;
     Latch<ForwardInstData> dToE;
-    Latch<BranchData> eToF1;
+    Latch<BranchData> eToF1;//carry (branch updates) to F1
 
     Execute execute;
     Decode decode;
     Fetch2 fetch2;
     Fetch1 fetch1;
+/*  ----------------------(eToF1)-------------------------
+ *  |                                                    |
+ *  |  ------(f2ToF1)----                                |
+ *  |  |                |                                |
+ *  v  v                |                                |
+ *  [F1] ->(f1ToF2)->  [F2] ->(f2ToD)->  [D] ->(dToE)->  [E]
+ * */
 
     /** Activity recording for the pipeline.  This is access through the CPU
      *  by the pipeline stages but belongs to the Pipeline as it is the
@@ -131,11 +138,14 @@ class Pipeline : public Ticked
 
     /** Functions below here are BaseCPU operations passed on to pipeline
      *  stages */
+    
 
+	//CPU 与  icache和dcache  的接口
     /** Return the IcachePort belonging to Fetch1 for the CPU */
     MinorCPU::MinorCPUPort &getInstPort();
     /** Return the DcachePort belonging to Execute for the CPU */
     MinorCPU::MinorCPUPort &getDataPort();
+
 
     /** To give the activity recorder to the CPU */
     MinorActivityRecorder *getActivityRecorder() { return &activityRecorder; }

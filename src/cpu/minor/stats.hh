@@ -78,7 +78,7 @@ class MinorStats
     Stats::Vector2d committedInstType;
 
   public:
-    MinorStats();
+    MinorStats();//构造方法
 
   public:
     void regStats(const std::string &name, BaseCPU &baseCpu);

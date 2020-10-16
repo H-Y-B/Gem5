@@ -126,6 +126,7 @@ Execute::Execute(const std::string &name_,
      *  queue */
     unsigned int total_slots = 0;
 
+	//添加功能单元
     /* Make FUPipelines for each MinorFU */
     for (unsigned int i = 0; i < numFuncUnits; i++) {
         std::ostringstream fu_name;
@@ -164,11 +165,12 @@ Execute::Execute(const std::string &name_,
         }
     }
 
+	//多线程
     /* Per-thread structures */
     for (ThreadID tid = 0; tid < params.numThreads; tid++) {
         std::string tid_str = std::to_string(tid);
 
-        /* Input Buffers */
+        /* Input Buffers */  //每个线程一个inputBuffer
         inputBuffer.push_back(
             InputBuffer<ForwardInstData>(
                 name_ + ".inputBuffer" + tid_str, "insts",
@@ -256,7 +258,7 @@ Execute::tryToBranch(MinorDynInstPtr inst, Fault fault, BranchData &branch)
                 inst->pc.instAddr(), inst->predictedTarget.instAddr(), *inst);
 
             reason = BranchData::BadlyPredictedBranch;
-        } else if (inst->predictedTarget == target) {
+        } else if (inst->predictedTarget == target) { //预测正确
             /* Branch prediction got the right target, kill the branch and
              *  carry on.
              *  Note that this information to the branch predictor might get
@@ -266,7 +268,7 @@ Execute::tryToBranch(MinorDynInstPtr inst, Fault fault, BranchData &branch)
                 inst->pc.instAddr(), inst->predictedTarget.instAddr(), *inst);
 
             reason = BranchData::CorrectlyPredictedBranch;
-        } else {
+        } else {//预测失败
             /* Branch prediction got the wrong target */
             DPRINTF(Branch, "Predicted a branch from 0x%x to 0x%x"
                     " but got the wrong target (actual: 0x%x) inst: %s\n",
@@ -572,10 +574,10 @@ Execute::issue(ThreadID thread_id)
     do {
         MinorDynInstPtr inst = insts_in->insts[thread.inputIndex];
         Fault fault = inst->fault;
-        bool discarded = false;
+        bool discarded = false;     //是否丢弃该指令
         bool issued_mem_ref = false;
-
-        if (inst->isBubble()) {
+		
+        if (inst->isBubble()) {//气泡指令
             /* Skip */
             issued = true;
         } else if (cpu.getContext(thread_id)->status() ==
@@ -599,7 +601,7 @@ Execute::issue(ThreadID thread_id)
 
             /* Try FU from 0 each instruction */
             fu_index = 0;
-
+			//指令 遍历功能单元
             /* Try and issue a single instruction stepping through the
              *  available FUs */
             do {
@@ -649,11 +651,11 @@ Execute::issue(ThreadID thread_id)
                         DPRINTF(MinorExecute, "Can't issue as FU: %d is"
                             " already busy\n", fu_index);
                     }
-                } else if (fu->stalled) {
+                } else if (fu->stalled) {  //fu被阻塞
                     DPRINTF(MinorExecute, "Can't issue inst: %s into FU: %d,"
                         " it's stalled\n",
                         *inst, fu_index);
-                } else if (!fu->canInsert()) {
+                } else if (!fu->canInsert()) {//fu正在忙
                     DPRINTF(MinorExecute, "Can't issue inst: %s to busy FU"
                         " for another: %d cycles\n",
                         *inst, fu->cyclesBeforeInsert());
@@ -768,9 +770,10 @@ Execute::issue(ThreadID thread_id)
                     }
                 }
 
-                fu_index++;
+                fu_index++;//尝试下一个功能单元
             } while (fu_index != numFuncUnits && !issued);
-
+			
+			//指令没有被发射
             if (!issued)
                 DPRINTF(MinorExecute, "Didn't issue inst: %s\n", *inst);
         }
@@ -914,7 +917,7 @@ Execute::commitInst(MinorDynInstPtr inst, bool early_memory_issue,
         inst->fault->invoke(thread, NULL);
 
         tryToBranch(inst, fault, branch);
-    } else if (inst->staticInst->isMemRef()) {
+    } else if (inst->staticInst->isMemRef()) {//load or store 指令
         /* Memory accesses are executed in two parts:
          *  executeMemRefInst -- calculates the EA and issues the access
          *      to memory.  This is done here.
@@ -965,7 +968,7 @@ Execute::commitInst(MinorDynInstPtr inst, bool early_memory_issue,
         /* This instruction can suspend, need to be able to communicate
          * backwards, so no other branches may evaluate this cycle*/
         completed_inst = false;
-    } else {
+    } else {//other arithmetic instructiona
         ExecContext context(cpu, *cpu.threads[thread_id], *this, inst);
 
         DPRINTF(MinorExecute, "Committing inst: %s\n", *inst);
@@ -1409,9 +1412,12 @@ Execute::isInbetweenInsts(ThreadID thread_id) const
         !lsq.accessesInFlight();
 }
 
+
+//Each active cycle, run this...
 void
 Execute::evaluate()
 {
+	//把 指令 放入 inputbuffer
     if (!inp.outputWire->isBubble())
         inputBuffer[inp.outputWire->threadId].setTail(*inp.outputWire);
 
@@ -1436,8 +1442,9 @@ Execute::evaluate()
         DPRINTF(MinorInterrupt, "Execute skipping a cycle to allow old"
             " branch to complete\n");
     } else {
-        ThreadID commit_tid = getCommittingThread();
 
+		//commit instructions--------------------------------------------------
+        ThreadID commit_tid = getCommittingThread();
         if (commit_tid != InvalidThreadID) {
             ExecuteThreadInfo& commit_info = executeInfo[commit_tid];
 
@@ -1481,13 +1488,15 @@ Execute::evaluate()
                 setDrainState(commit_tid, DrainAllInsts);
             }
         }
+
+		//issue new instructions---------------------------------------------
         ThreadID issue_tid = getIssuingThread();
         /* This will issue merrily even when interrupted in the sure and
          *  certain knowledge that the interrupt with change the stream */
         if (issue_tid != InvalidThreadID) {
             DPRINTF(MinorExecute, "Attempting to issue [tid:%d]\n",
                     issue_tid);
-            num_issued = issue(issue_tid);
+            num_issued = issue(issue_tid);//发射指令
         }
 
     }
@@ -1515,7 +1524,7 @@ Execute::evaluate()
 
     /* Advance the pipelines and note whether they still need to be
      * advanced */
-    for (unsigned int i = 0; i < numFuncUnits; i++) {
+    for (unsigned int i = 0; i < numFuncUnits; i++) {//遍历发射单元
         FUPipeline *fu = funcUnits[i];
         fu->advance();
 
