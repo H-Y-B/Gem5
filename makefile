@@ -12,8 +12,11 @@ o3-pipeview:
 	util/o3-pipeview.py -c 500 -o pipeview.out --color m5out/trace.out
 	#less -r pipeview.out
 
-clean:
+
+clean-build:
 	rm -rf build/
+clean-m5out:
+	rm -rf m5out/
 
 spec-400:
 	./build/RISCV/gem5.opt ./configs/myconfig/se.py -c $(spec_run)/400.perlbench/perlbench_base.riscv -o "-I. -I$(spec_run)/lib $(spec_run)/attrs.pl"
