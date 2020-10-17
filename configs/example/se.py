@@ -271,7 +271,7 @@ else:
     MemClass = Simulation.setMemClass(options)
     system.membus = SystemXBar()
     system.system_port = system.membus.slave
-    CacheConfig.config_cache(options, system)
+    CacheConfig.config_cache(options, system)  #配置cache
     MemConfig.config_mem(options, system)
     config_filesystem(system, options)
 

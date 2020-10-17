@@ -56,6 +56,7 @@ def config_cache(options, system):
     if options.external_memory_system:
         ExternalCache = ExternalCacheFactory(options.external_memory_system)
 
+    #配置CPU类型
     if options.cpu_type == "O3_ARM_v7a_3":
         try:
             import cores.arm.O3_ARM_v7a as core
@@ -83,8 +84,11 @@ def config_cache(options, system):
         if buildEnv['TARGET_ISA'] in ['x86', 'riscv']:
             walk_cache_class = PageTableWalkerCache
 
+
+
+
     # Set the cache line size of the system
-    system.cache_line_size = options.cacheline_size
+    system.cache_line_size = options.cacheline_size #cache line的大小
 
     # If elastic trace generation is enabled, make sure the memory system is
     # minimal so that compute delays do not include memory access latencies.
@@ -116,12 +120,14 @@ def config_cache(options, system):
     if options.memchecker:
         system.memchecker = MemChecker()
 
+    #遍历CPU
     for i in range(options.num_cpus):
+
         if options.caches:
-            icache = icache_class(size=options.l1i_size,
-                                  assoc=options.l1i_assoc)
-            dcache = dcache_class(size=options.l1d_size,
-                                  assoc=options.l1d_assoc)
+            icache = icache_class(size=options.l1i_size,   #大小
+                                  assoc=options.l1i_assoc) #相联的组数
+            dcache = dcache_class(size=options.l1d_size,   #大小
+                                  assoc=options.l1d_assoc) #相联的组数
 
             # If we have a walker cache specified, instantiate two
             # instances here
@@ -192,6 +198,7 @@ def config_cache(options, system):
                 system.cpu[i].addPrivateSplitL1Caches(
                         ExternalCache("cpu%d.icache" % i),
                         ExternalCache("cpu%d.dcache" % i))
+        # end of if options.caches:
 
         system.cpu[i].createInterruptController()
         if options.l2cache:
@@ -200,6 +207,7 @@ def config_cache(options, system):
             system.cpu[i].connectUncachedPorts(system.membus)
         else:
             system.cpu[i].connectAllPorts(system.membus)
+    # end of for i in range(options.num_cpus):
 
     return system
 
