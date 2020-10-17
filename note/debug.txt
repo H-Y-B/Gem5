@@ -1,0 +1,35 @@
+./build/RISCV/gem5.opt 
+--debug-flags=MinorExecute 
+--debug-file=trace.txt   //把打印信心输出到该文件
+
+./configs/myconfig/se.py 
+--cpu-type=MinorCPU 
+--caches  
+-c ./tests/test-progs/hello/bin/riscv/linux/hello
+
+
+minor-debug
+
+    DebugFlag('MinorCPU', 'Minor CPU-level events')
+    DebugFlag('MinorExecute', 'Minor Execute stage')
+    DebugFlag('MinorInterrupt', 'Minor interrupt handling')
+    DebugFlag('MinorMem', 'Minor memory accesses')
+    DebugFlag('MinorScoreboard', 'Minor Execute register scoreboard')
+    DebugFlag('MinorTrace', 'MinorTrace cycle-by-cycle state trace')
+    DebugFlag('MinorTiming', 'Extra timing for instructions')
+    
+
+o3-debug
+
+    DebugFlag('CommitRate')
+    DebugFlag('IEW')
+    DebugFlag('IQ')
+    DebugFlag('LSQ')
+    DebugFlag('LSQUnit')
+    DebugFlag('MemDepUnit')
+    DebugFlag('O3CPU')
+    DebugFlag('ROB')
+    DebugFlag('Rename')
+    DebugFlag('Scoreboard')
+    DebugFlag('StoreSet')
+    DebugFlag('Writeback')
