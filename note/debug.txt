@@ -7,6 +7,35 @@
 --caches  
 -c ./tests/test-progs/hello/bin/riscv/linux/hello
 
+basecpu
+
+	DebugFlag('Activity')
+	DebugFlag('Commit')
+	DebugFlag('Context')
+	DebugFlag('Decode')
+	DebugFlag('DynInst')
+	DebugFlag('ExecEnable','Filter: Enable exec tracing (no tracing without this)')
+	DebugFlag('ExecCPSeq', 'Format: Instruction sequence number')
+	DebugFlag('ExecEffAddr', 'Format: Include effective address')
+	DebugFlag('ExecFaulting', 'Trace faulting instructions')
+	DebugFlag('ExecFetchSeq', 'Format: Fetch sequence number')
+	DebugFlag('ExecOpClass', 'Format: Include operand class')
+	DebugFlag('ExecRegDelta')
+	DebugFlag('ExecResult', 'Format: Include results from execution')
+	DebugFlag('ExecSymbol', 'Format: Try to include symbol names')
+	DebugFlag('ExecThread', 'Format: Include thread ID in trace')
+	DebugFlag('ExecMicro', 'Filter: Include microops')
+	DebugFlag('ExecMacro', 'Filter: Include macroops')
+	DebugFlag('ExecUser', 'Filter: Trace user mode instructions')
+	DebugFlag('ExecKernel', 'Filter: Trace kernel mode instructions')
+	DebugFlag('ExecAsid', 'Format: Include ASID in trace')
+	DebugFlag('ExecFlags', 'Format: Include instruction flags in trace')
+	DebugFlag('Fetch')
+	DebugFlag('IntrControl')
+	DebugFlag('O3PipeView')
+	DebugFlag('PCEvent')
+	DebugFlag('Quiesce')
+	DebugFlag('Mwait')
 
 minor-debug
 
