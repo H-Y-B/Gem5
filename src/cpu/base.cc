@@ -637,7 +637,7 @@ BaseCPU::takeOverFrom(BaseCPU *oldCPU)
             threadContexts[i]->profileClear();
 
         if (profileEvent)
-            schedule(profileEvent, curTick());
+            schedule(profileEvent, curTick());//事件触发
     }
 
     // All CPUs have an instruction and a data port, and the new CPU's
