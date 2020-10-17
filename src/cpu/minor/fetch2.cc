@@ -68,7 +68,7 @@ Fetch2::Fetch2(const std::string &name,
     outputWidth(params.decodeInputWidth),
     processMoreThanOneInput(params.fetch2CycleInput),
     branchPredictor(*params.branchPred),
-    fetchInfo(params.numThreads),
+    fetchInfo(params.numThreads),//py参数
     threadPriority(0)
 {
     if (outputWidth < 1)
@@ -262,7 +262,7 @@ Fetch2::evaluate()
     assert(insts_out.isBubble());
     /* Even when blocked, clear out input lines with the wrong
      *  prediction sequence number */
-    for (ThreadID tid = 0; tid < cpu.numThreads; tid++) {
+    for (ThreadID tid = 0; tid < cpu.numThreads; tid++) {//遍历线程
         Fetch2ThreadInfo &thread = fetchInfo[tid];
 
         thread.blocked = !nextStageReserve[tid].canReserve();
@@ -393,7 +393,7 @@ Fetch2::evaluate()
                 if (decoder->instReady()) {
                     /* Make a new instruction and pick up the line, stream,
                      *  prediction, thread ids from the incoming line */
-                    dyn_inst = new MinorDynInst(line_in->id);
+                    dyn_inst = new MinorDynInst(line_in->id);//给指令分配空间
 
                     /* Fetch and prediction sequence numbers originate here */
                     dyn_inst->id.fetchSeqNum = fetch_info.fetchSeqNum;
@@ -405,10 +405,10 @@ Fetch2::evaluate()
                     /* Note that the decoder can update the given PC.
                      *  Remember not to assign it until *after* calling
                      *  decode */
-                    StaticInstPtr decoded_inst = decoder->decode(fetch_info.pc);
-                    dyn_inst->staticInst = decoded_inst;
+                    StaticInstPtr decoded_inst = decoder->decode(fetch_info.pc);//译码操作
+                    dyn_inst->staticInst = decoded_inst;//译码结果
 
-                    dyn_inst->pc = fetch_info.pc;
+                    dyn_inst->pc = fetch_info.pc;//pc
                     DPRINTF(Fetch, "decoder inst %s\n", *dyn_inst);
 
                     // Collect some basic inst class stats
