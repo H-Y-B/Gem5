@@ -16,7 +16,7 @@ HybCache::HybCache(HybCacheParams *params) :
     // automatically created depending on the name of the vector port and
     // holds the number of connections to this port name
     for (int i = 0; i < params->port_cpu_side_connection_count; ++i) {
-        cpuPorts.emplace_back(name() + csprintf(".cpu_side[%d]", i), i, this);
+        cpuPorts.emplace_back(name() + csprintf(".cpu_side[%d]", i), i, this);//debug print
     }
 }
 
@@ -400,20 +400,20 @@ HybCache::regStats()
     // If you don't do this you get errors about uninitialized stats.
     ClockedObject::regStats();
 
-    hits.name(name() + ".hits")
+    hits.name(name() + ".hyb.hits")
         .desc("Number of hits")
         ;
 
-    misses.name(name() + ".misses")
+    misses.name(name() + ".hyb.misses")
         .desc("Number of misses")
         ;
 
-    missLatency.name(name() + ".missLatency")
+    missLatency.name(name() + ".hyb.missLatency")
         .desc("Ticks for misses to the cache")
-        .init(16) // number of buckets
+        .init(16) // number of bucketsW
         ;
 
-    hitRatio.name(name() + ".hitRatio")
+    hitRatio.name(name() + ".hyb.hitRatio")
         .desc("The ratio of hits to the total accesses to the cache")
         ;
 
