@@ -157,11 +157,11 @@ MinorCPU::wakeup(ThreadID tid)
 }
 
 void
-MinorCPU::startup()
+MinorCPU::startup()//MinorCPU-开始
 {
     DPRINTF(MinorCPU, "MinorCPU startup\n");
 
-    BaseCPU::startup();
+    BaseCPU::startup();//BaseCPU-开始
 
     for (ThreadID tid = 0; tid < numThreads; tid++) {
         threads[tid]->startup();

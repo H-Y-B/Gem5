@@ -125,7 +125,7 @@ class MinorCPU : public BaseCPU
   public:
     /** Starting, waking and initialisation */
     void init() override;
-    void startup() override;
+    void startup() override;//MinorCPU-开始
     void wakeup(ThreadID tid) override;
 
     /** Processor-specific statistics */
