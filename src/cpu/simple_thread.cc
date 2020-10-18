@@ -159,7 +159,7 @@ SimpleThread::unserialize(CheckpointIn &cp)
 void
 SimpleThread::startup()
 {
-    isa->startup(this);
+    isa->startup(this);//riscv-isa-开始
 }
 
 void

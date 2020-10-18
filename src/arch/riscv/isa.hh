@@ -98,7 +98,7 @@ class ISA : public BaseISA
     int flattenCCIndex(int reg) const { return reg; }
     int flattenMiscIndex(int reg) const { return reg; }
 
-    void startup(ThreadContext *tc) {}
+    void startup(ThreadContext *tc) {}//riscv-isa-开始
 
     void serialize(CheckpointOut &cp) const;
     void unserialize(CheckpointIn &cp);
