@@ -2,6 +2,7 @@
 #include "hyb-mem/hyb_mem.hh"
 
 #include "debug/HybMem.hh"
+#include "debug/HybMemTrace.hh"
 
 HybMem::HybMem(HybMemParams *params) :
     SimObject(params),
@@ -79,6 +80,17 @@ bool
 HybMem::CPUSidePort::recvTimingReq(PacketPtr pkt)//CPU->CPUSidePort::recvTimingReq->handleRequest->[MemSidePort::sendPacket]->MEM
 {
     DPRINTF(HybMem, "HybMem::CPUSidePort::recvTimingReq(PacketPtr pkt)\n");//从CPUSidePort，拿到了请求
+    if(pkt->isWrite())
+    {
+        DPRINTF(HybMemTrace, "CPU req cmd write  addr:%8#x   %s   size:%d \n",pkt->getAddr(),pkt->cmdString(),pkt->getSize());
+    }else if (pkt->isRead())
+    {
+        DPRINTF(HybMemTrace, "CPU req cmd read   addr:%8#x   %s  size:%d \n",pkt->getAddr(),pkt->cmdString(),pkt->getSize());
+    }else
+    {
+        DPRINTF(HybMemTrace, "CPU req cmd unknown\n");
+    }
+
     // Just forward to the memobj.
     if (!owner->handleRequest(pkt)) {//HybMem是否在处理请求，不能再接受新的请求？
         needRetry = true;//需要再次发送请求给HybMem

@@ -4,3 +4,4 @@ SimObject('HybMem.py')
 Source('hyb_mem.cc')
 
 DebugFlag('HybMem', "DebugFlag : HybMem")
+DebugFlag('HybMemTrace', "DebugFlag : HybMemTrace")
