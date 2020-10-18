@@ -27,3 +27,4 @@ spec-401:
 #######################################################
 #demo
 #./build/RISCV/gem5.opt --debug-flags=MinorTiming --debug-file=trace.txt ./configs/myconfig/se.py --cpu-type=MinorCPU --caches  -c ./tests/test-progs/hello/bin/riscv/linux/hello
+#python  /usr/bin/scons build/ALPHA/gem5.opt -j8
