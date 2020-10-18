@@ -10,11 +10,14 @@ HybMem::HybMem(HybMemParams *params) :
     memPort(params->name + ".mem_side", this),
     blocked(false)
 {
+    DPRINTF(HybMem, "HybMem::HybMem(HybMemParams *params) \n");
 }
 
 Port &
 HybMem::getPort(const std::string &if_name, PortID idx)
 {
+    DPRINTF(HybMem, "HybMem::getPort(const std::string &if_name, PortID idx) \n");
+
     panic_if(idx != InvalidPortID, "This object doesn't support vector ports");
 
     // This is the name from the Python SimObject declaration (SimpleMemobj.py)
@@ -33,8 +36,9 @@ HybMem::getPort(const std::string &if_name, PortID idx)
 void
 HybMem::CPUSidePort::sendPacket(PacketPtr pkt)//CPUSidePort<-[sendPacket]<-handleResponse<-recvTimingResp<-MemSidePort
 {
-    // Note: This flow control is very simple since the memobj is blocking.
+    DPRINTF(HybMem, "HybMem::CPUSidePort::sendPacket(PacketPtr pkt)\n");
 
+    // Note: This flow control is very simple since the memobj is blocking.
     panic_if(blockedPacket != nullptr, "Should never try to send if blocked!");
 
     // If we can't send the packet across the port, store it for later.
@@ -46,6 +50,8 @@ HybMem::CPUSidePort::sendPacket(PacketPtr pkt)//CPUSidePort<-[sendPacket]<-handl
 AddrRangeList
 HybMem::CPUSidePort::getAddrRanges() const//CPUSidePort::getAddrRanges()->HybMem::getAddrRanges()->memPort.getAddrRanges();
 {
+    DPRINTF(HybMem, "HybMem::CPUSidePort::getAddrRanges()\n");
+
     return owner->getAddrRanges();
 }
 
@@ -55,7 +61,7 @@ HybMem::CPUSidePort::trySendRetry()
     if (needRetry && blockedPacket == nullptr) {
         // Only send a retry if the port is now completely free
         needRetry = false;
-        DPRINTF(HybMem, "Sending retry req for %d\n", id);
+        DPRINTF(HybMem, "HybMem::CPUSidePort::trySendRetry()====Sending retry req for %d\n", id);
         sendRetryReq();
     }
 }
@@ -63,6 +69,8 @@ HybMem::CPUSidePort::trySendRetry()
 void
 HybMem::CPUSidePort::recvFunctional(PacketPtr pkt)//CPUSidePort::recvFunctional->HybMem::handleFunctional->
 {
+    DPRINTF(HybMem, "HybMem::CPUSidePort::recvFunctional(PacketPtr pkt)\n");
+
     // Just forward to the memobj.
     return owner->handleFunctional(pkt);
 }
@@ -70,6 +78,7 @@ HybMem::CPUSidePort::recvFunctional(PacketPtr pkt)//CPUSidePort::recvFunctional-
 bool
 HybMem::CPUSidePort::recvTimingReq(PacketPtr pkt)//CPU->CPUSidePort::recvTimingReq->handleRequest->[MemSidePort::sendPacket]->MEM
 {
+    DPRINTF(HybMem, "HybMem::CPUSidePort::recvTimingReq(PacketPtr pkt)\n");//从CPUSidePort，拿到了请求
     // Just forward to the memobj.
     if (!owner->handleRequest(pkt)) {//HybMem是否在处理请求，不能再接受新的请求？
         needRetry = true;//需要再次发送请求给HybMem
@@ -82,6 +91,8 @@ HybMem::CPUSidePort::recvTimingReq(PacketPtr pkt)//CPU->CPUSidePort::recvTimingR
 void
 HybMem::CPUSidePort::recvRespRetry()//再次向CPU发送pkt
 {
+    DPRINTF(HybMem, "HybMem::CPUSidePort::recvRespRetry()\n");
+
     // We should have a blocked packet if this function is called.
     assert(blockedPacket != nullptr);
 
@@ -96,8 +107,9 @@ HybMem::CPUSidePort::recvRespRetry()//再次向CPU发送pkt
 void
 HybMem::MemSidePort::sendPacket(PacketPtr pkt)//CPU->CPUSidePort::recvTimingReq->handleRequest->[MemSidePort::sendPacket]->MEM
 {
-    // Note: This flow control is very simple since the memobj is blocking.
+    DPRINTF(HybMem, "HybMem::MemSidePort::sendPacket(PacketPtr pkt)\n");
 
+    // Note: This flow control is very simple since the memobj is blocking.
     panic_if(blockedPacket != nullptr, "Should never try to send if blocked!");
 
     // If we can't send the packet across the port, store it for later.
@@ -109,6 +121,7 @@ HybMem::MemSidePort::sendPacket(PacketPtr pkt)//CPU->CPUSidePort::recvTimingReq-
 bool
 HybMem::MemSidePort::recvTimingResp(PacketPtr pkt)//CPUSidePort<-sendPacket<-handleResponse<-[recvTimingResp]<-MemSidePort
 {
+    DPRINTF(HybMem, "HybMem::MemSidePort::recvTimingResp(PacketPtr pkt)\n");
     // Just forward to the memobj.
     return owner->handleResponse(pkt);
 }
@@ -116,6 +129,8 @@ HybMem::MemSidePort::recvTimingResp(PacketPtr pkt)//CPUSidePort<-sendPacket<-han
 void
 HybMem::MemSidePort::recvReqRetry()//再次向MEM发送pkt
 {
+    DPRINTF(HybMem, "HybMem::MemSidePort::recvReqRetry()\n");
+
     // We should have a blocked packet if this function is called.
     assert(blockedPacket != nullptr);
 
@@ -130,6 +145,8 @@ HybMem::MemSidePort::recvReqRetry()//再次向MEM发送pkt
 void
 HybMem::MemSidePort::recvRangeChange()//CPUSidePort::sendRangeChange <-HybMem::sendRangeChange()<-MemSidePort::recvRangeChange()
 {
+    DPRINTF(HybMem, "HybMem::MemSidePort::recvRangeChange()\n");
+
     owner->sendRangeChange();
 }
 
@@ -141,7 +158,7 @@ HybMem::handleRequest(PacketPtr pkt)//CPU->CPUSidePort::recvTimingReq->[HybMem::
         return false;
     }
 
-    DPRINTF(HybMem, "Got request for addr %#x\n", pkt->getAddr());
+    DPRINTF(HybMem, "HybMem::handleRequest(PacketPtr pkt)====Got request for addr %#x\n", pkt->getAddr());//从CPUSidePort，拿到了请求
 
     // This memobj is now blocked waiting for the response to this packet.
     blocked = true;
@@ -155,8 +172,10 @@ HybMem::handleRequest(PacketPtr pkt)//CPU->CPUSidePort::recvTimingReq->[HybMem::
 bool
 HybMem::handleResponse(PacketPtr pkt)//CPUSidePort<-sendPacket<-[handleResponse]<-recvTimingResp<-MemSidePort
 {
+    DPRINTF(HybMem, "HybMem::handleResponse(PacketPtr pkt)\n");
+
     assert(blocked);
-    DPRINTF(HybMem, "Got response for addr %#x\n", pkt->getAddr());
+    DPRINTF(HybMem, "HybMem::handleResponse(PacketPtr pkt)====Got response for addr %#x\n", pkt->getAddr());
 
     // The packet is now done. We're about to put it in the port, no need for
     // this object to continue to stall.
@@ -189,7 +208,7 @@ HybMem::handleFunctional(PacketPtr pkt)//CPUSidePort::recvFunctional->HybMem::ha
 AddrRangeList
 HybMem::getAddrRanges() const//CPUSidePort::getAddrRanges()->HybMem::getAddrRanges()->memPort.getAddrRanges();
 {
-    DPRINTF(HybMem, "Sending new ranges\n");
+    DPRINTF(HybMem, "HybMem::getAddrRanges() ====Sending new ranges\n");
     // Just use the same ranges as whatever is on the memory side.
     return memPort.getAddrRanges();
 }
@@ -197,6 +216,8 @@ HybMem::getAddrRanges() const//CPUSidePort::getAddrRanges()->HybMem::getAddrRang
 void
 HybMem::sendRangeChange()//CPUSidePort::sendRangeChange <-HybMem::sendRangeChange()<-MemSidePort::recvRangeChange()
 {
+    DPRINTF(HybMem, "HybMem::sendRangeChange()\n");
+
     instPort.sendRangeChange();
     dataPort.sendRangeChange();
 }
