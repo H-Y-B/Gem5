@@ -34,7 +34,7 @@ class HybMem : public SimObject
         void trySendRetry();
 
       protected:
-        Tick recvAtomic(PacketPtr pkt) override
+        Tick recvAtomic(PacketPtr pkt) override//This is the function called whenever the CPU tries to make an atomic memory access.
         { panic("recvAtomic unimpl."); }
         void recvFunctional(PacketPtr pkt) override;
         bool recvTimingReq(PacketPtr pkt) override;
@@ -70,7 +70,7 @@ class HybMem : public SimObject
 
     void sendRangeChange();
 
-    CPUSidePort instPort;
+    CPUSidePort instPort;    //the slave port,
     CPUSidePort dataPort;
 
     MemSidePort memPort;

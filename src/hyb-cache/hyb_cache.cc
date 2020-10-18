@@ -38,7 +38,7 @@ HybCache::getPort(const std::string &if_name, PortID idx)
 }
 
 void
-HybCache::CPUSidePort::sendPacket(PacketPtr pkt)
+HybCache::CPUSidePort ::sendPacket(PacketPtr pkt)//给CPU发送响应
 {
     // Note: This flow control is very simple since the cache is blocking.
 
@@ -77,7 +77,7 @@ HybCache::CPUSidePort::recvFunctional(PacketPtr pkt)
 }
 
 bool
-HybCache::CPUSidePort::recvTimingReq(PacketPtr pkt)
+HybCache::CPUSidePort::recvTimingReq(PacketPtr pkt)//接收CPU发来的请求
 {
     DPRINTF(HybCache, "Got request %s\n", pkt->print());
 
@@ -88,7 +88,7 @@ HybCache::CPUSidePort::recvTimingReq(PacketPtr pkt)
         return false;
     }
     // Just forward to the cache.
-    if (!owner->handleRequest(pkt, id)) {
+    if (!owner->handleRequest(pkt, id)) {  //HybCache是否在阻塞
         DPRINTF(HybCache, "Request failed\n");
         // stalling
         needRetry = true;
@@ -250,26 +250,27 @@ HybCache::handleFunctional(PacketPtr pkt)
 void
 HybCache::accessTiming(PacketPtr pkt)
 {
-    bool hit = accessFunctional(pkt);
+    bool hit = accessFunctional(pkt);//判断是否命中
 
     DPRINTF(HybCache, "%s for packet: %s\n", hit ? "Hit" : "Miss",
             pkt->print());
 
-    if (hit) {
+    if (hit) {//命中
         // Respond to the CPU side
         hits++; // update stats
         DDUMP(HybCache, pkt->getConstPtr<uint8_t>(), pkt->getSize());
         pkt->makeResponse();
         sendResponse(pkt);
-    } else {
+    } else {  //miss
         misses++; // update stats
         missTime = curTick();
+
         // Forward to the memory side.
         // We can't directly forward the packet unless it is exactly the size
         // of the cache line, and aligned. Check for that here.
-        Addr addr = pkt->getAddr();
+        Addr addr       = pkt->getAddr();
         Addr block_addr = pkt->getBlockAddr(blockSize);
-        unsigned size = pkt->getSize();
+        unsigned size   = pkt->getSize();
         if (addr == block_addr && size == blockSize) {
             // Aligned and block size. We can just forward.
             DPRINTF(HybCache, "forwarding packet\n");
@@ -280,6 +281,7 @@ HybCache::accessTiming(PacketPtr pkt)
                      "Cannot handle accesses that span multiple cache lines");
             // Unaligned access to one cache block
             assert(pkt->needsResponse());
+
             MemCmd cmd;
             if (pkt->isWrite() || pkt->isRead()) {
                 // Read the data from memory to write into the block.
