@@ -81,7 +81,7 @@ class MinorStats
     MinorStats();//构造方法
 
   public:
-    void regStats(const std::string &name, BaseCPU &baseCpu);
+    void regStats(const std::string &name, BaseCPU &baseCpu);//stats.txt统计信息
 };
 
 }

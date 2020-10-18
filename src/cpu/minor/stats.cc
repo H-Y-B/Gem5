@@ -44,6 +44,7 @@ namespace Minor
 MinorStats::MinorStats()
 { }
 
+//stats.txt统计信息
 void
 MinorStats::regStats(const std::string &name, BaseCPU &baseCpu)
 {

@@ -602,6 +602,7 @@ Fetch2::isDrained()
            (*predictionOut.inputWire).isBubble();
 }
 
+//stats.txt统计信息
 void
 Fetch2::regStats()
 {

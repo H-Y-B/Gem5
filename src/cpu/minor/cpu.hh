@@ -129,10 +129,10 @@ class MinorCPU : public BaseCPU
     void wakeup(ThreadID tid) override;
 
     /** Processor-specific statistics */
-    Minor::MinorStats stats;//统计信息
+    Minor::MinorStats stats;//stats.txt统计信息
 
     /** Stats interface from SimObject (by way of BaseCPU) */
-    void regStats() override;
+    void regStats() override;//stats.txt统计信息
 
     /** Simple inst count interface from BaseCPU */
     Counter totalInsts() const override;

@@ -104,7 +104,7 @@ Pipeline::Pipeline(MinorCPU &cpu_, MinorCPUParams &params) :
 }
 
 void
-Pipeline::regStats()
+Pipeline::regStats()//stats.txt统计信息
 {
     Ticked::regStats();
 

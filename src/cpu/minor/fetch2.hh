@@ -212,7 +212,7 @@ class Fetch2 : public Named
 
     void minorTrace() const;
 
-    void regStats();
+    void regStats();//stats.txt统计信息
 
     /** Is this stage drained?  For Fetch2, draining is initiated by
      *  Execute halting Fetch1 causing Fetch2 to naturally drain.

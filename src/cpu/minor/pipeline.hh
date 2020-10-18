@@ -134,7 +134,7 @@ class Pipeline : public Ticked
     void minorTrace() const;
 
     /** Stats registering */
-    void regStats();
+    void regStats();//stats.txt统计信息
 
     /** Functions below here are BaseCPU operations passed on to pipeline
      *  stages */

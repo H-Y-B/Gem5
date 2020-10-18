@@ -112,7 +112,7 @@ MinorCPU::init()
 
 /** Stats interface from SimObject (by way of BaseCPU) */
 void
-MinorCPU::regStats()
+MinorCPU::regStats()//stats.txt统计信息
 {
     BaseCPU::regStats();
     stats.regStats(name(), *this);
