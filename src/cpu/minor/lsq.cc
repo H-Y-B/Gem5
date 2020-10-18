@@ -383,7 +383,7 @@ LSQ::SplitDataRequest::finish(const Fault &fault_, const RequestPtr &request_,
     } else {
         /* Avoid calling translateTiming from within ::finish */
         assert(!translationEvent.scheduled());
-        port.cpu.schedule(translationEvent, curTick());
+        port.cpu.schedule(translationEvent, curTick());//事件驱动
     }
 }
 

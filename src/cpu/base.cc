@@ -86,7 +86,7 @@ CPUProgressEvent::CPUProgressEvent(BaseCPU *_cpu, Tick ival)
       cpu(_cpu), _repeatEvent(true)
 {
     if (_interval)
-        cpu->schedule(this, curTick() + _interval);
+        cpu->schedule(this, curTick() + _interval);//事件驱动
 }
 
 void
@@ -95,7 +95,7 @@ CPUProgressEvent::process()
     Counter temp = cpu->totalOps();
 
     if (_repeatEvent)
-      cpu->schedule(this, curTick() + _interval);
+      cpu->schedule(this, curTick() + _interval);//事件驱动
 
     if (cpu->switchedOut()) {
       return;
@@ -166,7 +166,7 @@ BaseCPU::BaseCPU(Params *p, bool is_checker)
         } else {
             Event *event = new EventFunctionWrapper(
                 [this]{ enableFunctionTrace(); }, name(), true);
-            schedule(event, p->function_trace_start);
+            schedule(event, p->function_trace_start);//事件驱动
         }
     }
 
@@ -317,11 +317,11 @@ BaseCPU::init()
 }
 
 void
-BaseCPU::startup()
+BaseCPU::startup()//起点
 {
     if (FullSystem) {
         if (!params()->switched_out && profileEvent)
-            schedule(profileEvent, curTick());
+            schedule(profileEvent, curTick());//事件驱动
     }
 
     if (params()->progress_interval) {
@@ -468,7 +468,7 @@ BaseCPU::schedulePowerGatingEvent()
         assert(!enterPwrGatingEvent.scheduled());
         // Schedule a power gating event when clock gated for the specified
         // amount of time
-        schedule(enterPwrGatingEvent, clockEdge(pwrGatingLatency));
+        schedule(enterPwrGatingEvent, clockEdge(pwrGatingLatency));//事件驱动
     }
 }
 
@@ -519,7 +519,7 @@ BaseCPU::suspendContext(ThreadID thread_num)
     if (powerGatingOnIdle) {
         // Schedule power gating event when clock gated for pwrGatingLatency
         // cycles
-        schedule(enterPwrGatingEvent, clockEdge(pwrGatingLatency));
+        schedule(enterPwrGatingEvent, clockEdge(pwrGatingLatency));//事件驱动
     }
 }
 
@@ -672,7 +672,7 @@ BaseCPU::processProfileEvent()
     for (ThreadID i = 0; i < size; ++i)
         threadContexts[i]->profileSample();
 
-    schedule(profileEvent, curTick() + params()->profile);
+    schedule(profileEvent, curTick() + params()->profile);//事件驱动
 }
 
 void
