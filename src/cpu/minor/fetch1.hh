@@ -72,9 +72,9 @@ class Fetch1 : public Named
         { }
 
       protected:
-        bool recvTimingResp(PacketPtr pkt)
+        bool recvTimingResp(PacketPtr pkt)    //icache端接受resp
         { return fetch.recvTimingResp(pkt); }
-
+      //bool sendTimingReq(PacketPtr pkt)
         void recvReqRetry() { fetch.recvReqRetry(); }
     };
 
@@ -380,7 +380,7 @@ class Fetch1 : public Named
     virtual bool recvTimingResp(PacketPtr pkt);
     virtual void recvReqRetry();
 
-  public:
+  public://取值1构造方法
     Fetch1(const std::string &name_,
         MinorCPU &cpu_,
         MinorCPUParams &params,

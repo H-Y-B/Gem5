@@ -69,8 +69,8 @@ Fetch1::Fetch1(const std::string &name_,
     fetchLimit(params.fetch1FetchLimit),
     fetchInfo(params.numThreads),
     threadPriority(0),
-    requests(name_ + ".requests", "lines", params.fetch1FetchLimit),
-    transfers(name_ + ".transfers", "lines", params.fetch1FetchLimit),
+    requests(name_ + ".requests", "lines", params.fetch1FetchLimit),  //FetchQueue:requests
+    transfers(name_ + ".transfers", "lines", params.fetch1FetchLimit),//FetchQueue:transfers
     icacheState(IcacheRunning),
     lineSeqNum(InstId::firstLineSeqNum),
     numFetchesInMemorySystem(0),
@@ -314,7 +314,7 @@ Fetch1::moveFromRequestsToTransfers(FetchRequestPtr request)
     assert(!requests.empty() && requests.front() == request);
 
     requests.pop();
-    transfers.push(request);
+    transfers.push(request);//FetchQueue:transfers
 }
 
 bool
@@ -322,7 +322,7 @@ Fetch1::tryToSend(FetchRequestPtr request)
 {
     bool ret = false;
 
-    if (icachePort.sendTimingReq(request->packet)) {
+    if (icachePort.sendTimingReq(request->packet)) {//向icache端口发送请求
         /* Invalidate the fetch_requests packet so we don't
          *  accidentally fail to deallocate it (or use it!)
          *  later by overwriting it */
@@ -404,7 +404,7 @@ Fetch1::minorTraceResponseLine(const std::string &name,
 }
 
 bool
-Fetch1::recvTimingResp(PacketPtr response)
+Fetch1::recvTimingResp(PacketPtr response)//接受icache端的resp
 {
     DPRINTF(Fetch, "recvTimingResp %d\n", numFetchesInMemorySystem);
 
@@ -475,7 +475,7 @@ operator <<(std::ostream &os, Fetch1::FetchState state)
     return os;
 }
 
-void
+void//start fetching from a new address
 Fetch1::changeStream(const BranchData &branch)
 {
     Fetch1ThreadInfo &thread = fetchInfo[branch.threadId];
@@ -562,15 +562,18 @@ Fetch1::processResponse(Fetch1::FetchRequestPtr response,
 void
 Fetch1::evaluate()
 {
-    const BranchData &execute_branch = *inp.outputWire;
-    const BranchData &fetch2_branch = *prediction.outputWire;
-    ForwardLineData &line_out = *out.inputWire;
+    const BranchData &execute_branch =        *inp.outputWire; //from Exe
+    const BranchData &fetch2_branch  = *prediction.outputWire; //from F2
+    ForwardLineData  &line_out       =        *out.inputWire ; //to F2
 
     assert(line_out.isBubble());
 
     for (ThreadID tid = 0; tid < cpu.numThreads; tid++)
         fetchInfo[tid].blocked = !nextStageReserve[tid].canReserve();
 
+	/*两种情况：
+	 * 1.Exe and F1 对同一个线程 重定向
+	 * 2.Exe and F1 对不同的线程 重定向*/
     /** Are both branches from later stages valid and for the same thread? */
     if (execute_branch.threadId != InvalidThreadID &&
         execute_branch.threadId == fetch2_branch.threadId) {
@@ -579,21 +582,21 @@ Fetch1::evaluate()
 
         /* Are we changing stream?  Look to the Execute branches first, then
          * to predicted changes of stream from Fetch2 */
-        if (execute_branch.isStreamChange()) {
+        if (execute_branch.isStreamChange()) {//执行阶段要更改PC
             if (thread.state == FetchHalted) {
                 DPRINTF(Fetch, "Halted, ignoring branch: %s\n", execute_branch);
             } else {
-                changeStream(execute_branch);
+                changeStream(execute_branch);//选择执行阶段更改的PC
             }
 
-            if (!fetch2_branch.isBubble()) {
+            if (!fetch2_branch.isBubble()) { //忽略F2阶段更改的PC
                 DPRINTF(Fetch, "Ignoring simultaneous prediction: %s\n",
                     fetch2_branch);
             }
 
             /* The streamSeqNum tagging in request/response ->req should handle
              *  discarding those requests when we get to them. */
-        } else if (thread.state != FetchHalted && fetch2_branch.isStreamChange()) {
+        } else if (thread.state != FetchHalted && fetch2_branch.isStreamChange()) {//F2阶段要更改PC
             /* Handle branch predictions by changing the instruction source
              * if we're still processing the same stream (as set by streamSeqNum)
              * as the one of the prediction.
@@ -603,7 +606,7 @@ Fetch1::evaluate()
                     " streamSeqNum mismatch\n",
                     fetch2_branch);
             } else {
-                changeStream(fetch2_branch);
+                changeStream(fetch2_branch);//选择F2阶段更改的PC
             }
         }
     } else {
@@ -654,10 +657,10 @@ Fetch1::evaluate()
 
     /* As we've thrown away early lines, if there is a line, it must
      *  be from the right stream */
-    if (!transfers.empty() &&
+    if (!transfers.empty() &&               //FetchQueue:transfers
         transfers.front()->isComplete())
     {
-        Fetch1::FetchRequestPtr response = transfers.front();
+        Fetch1::FetchRequestPtr response = transfers.front();//FetchQueue:transfers
 
         if (response->isDiscardable()) {
             nextStageReserve[response->id.threadId].freeReservation();
@@ -672,7 +675,7 @@ Fetch1::evaluate()
             DPRINTF(Fetch, "Processing fetched line: %s\n",
                 response->id);
 
-            processResponse(response, line_out);
+            processResponse(response, line_out);//send response to line_out(F2)
         }
 
         popAndDiscard(transfers);
