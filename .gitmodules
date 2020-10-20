@@ -1,0 +1,3 @@
+[submodule "note/spectre-attack"]
+	path = note/spectre-attack
+	url = https://github.com/H-Y-B/spectre-attack.git
