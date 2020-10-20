@@ -8,9 +8,11 @@ helli-o3-pipeview:
 	#less -r pipeview.out
 
 
-x86-spectre-o3-pipeline:
-	./build/X86/gem5.opt --debug-flags=O3PipeView --debug-start=10000 --debug-file=spectre.out ./configs/myconfig/se.py --cpu-type=DerivO3CPU --bp-type=TAGE  --caches -c ./note/spectre-attack/spectre 
+x86-spectre:
+	./build/X86/gem5.opt ./configs/myconfig/se.py --cpu-type=DerivO3CPU --bp-type=LTAGE  --caches --l2cache -c ./note/spectre-attack/spectre 
 
+x86-spectre-o3-pipeline:
+	./build/X86/gem5.opt --debug-flags=O3PipeView --debug-start=10000 --debug-file=spectre.out ./configs/myconfig/se.py --cpu-type=DerivO3CPU --bp-type=LTAGE  --caches --l2cache -c ./note/spectre-attack/spectre 
 spectre-o3-pipeview:
 	util/o3-pipeview.py -c 500 -o pipeview.out --color m5out/trace.out
 	#less -r pipeview.out
