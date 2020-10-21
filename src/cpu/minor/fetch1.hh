@@ -74,8 +74,13 @@ class Fetch1 : public Named
       protected:
         bool recvTimingResp(PacketPtr pkt)    //icache端接受resp
         { return fetch.recvTimingResp(pkt); }
-      //bool sendTimingReq(PacketPtr pkt)
+      //bool sendTimingReq(PacketPtr pkt)        //icache端口向下级存储器发送请求
+
+        //当icache不忙的时候，就会调用该函数，MinorCPU在此向icache端口发送请求
         void recvReqRetry() { fetch.recvReqRetry(); }
+        
+        //之前在icahe端口在忙，没有接受下一级的resp，现在不忙了，调用该函数，告诉下一级，把resp再发一次
+        //sendRespRetry
     };
 
     /** Memory access queuing.
@@ -149,7 +154,7 @@ class Fetch1 : public Named
         bool isDiscardable() const;
 
         /** Is this a complete read line or fault */
-        bool isComplete() const { return state == Complete; }
+        bool isComplete() const { return state == Complete; }//F1请求状态：向icache端口发送请求后，icahce端口回应
 
       protected:
         /** BaseTLB::Translation interface */

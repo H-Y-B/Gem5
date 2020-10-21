@@ -142,7 +142,7 @@ Fetch1::getScheduledThread()
    return InvalidThreadID;
 }
 
-void
+void//将  一个fetchline请求  发送到 FetchQueue:requests;
 Fetch1::fetchLine(ThreadID tid)
 {
     /* Reference the currently used thread state. */
@@ -160,7 +160,7 @@ Fetch1::fetchLine(ThreadID tid)
         thread.streamSeqNum, thread.predictionSeqNum,
         lineSeqNum);
 
-    FetchRequestPtr request = new FetchRequest(*this, request_id, thread.pc);
+    FetchRequestPtr request = new FetchRequest(*this, request_id, thread.pc);//新建  FetchQueue：requests的  一项
 
     DPRINTF(Fetch, "Inserting fetch into the fetch queue "
         "%s addr: 0x%x pc: %s line_offset: %d request_size: %d\n",
@@ -175,7 +175,7 @@ Fetch1::fetchLine(ThreadID tid)
     DPRINTF(Fetch, "Submitting ITLB request\n");
     numFetchesInITLB++;
 
-    request->state = FetchRequest::InTranslation;
+    request->state = FetchRequest::InTranslation;//F1请求状态：已经向ITLB发送请求，等待回应
 
     /* Reserve space in the queues upstream of requests for results */
     transfers.reserve();
@@ -232,7 +232,7 @@ Fetch1::FetchRequest::finish(const Fault &fault_, const RequestPtr &request_,
 {
     fault = fault_;
 
-    state = Translated;
+    state = Translated;//F1请求状态：向ITLB发送请求后，ITLB回应
     fetch.handleTLBResponse(this);
 
     /* Let's try and wake up the processor for the next cycle */
@@ -258,7 +258,7 @@ Fetch1::handleTLBResponse(FetchRequestPtr response)
         DPRINTF(Fetch, "Got ITLB response\n");
     }
 
-    response->state = FetchRequest::Translated;
+    response->state = FetchRequest::Translated;//F1请求状态：向ITLB发送请求后，ITLB回应
 
     tryToSendToTransfers(response);
 }
@@ -278,7 +278,7 @@ Fetch1::tryToSendToTransfers(FetchRequestPtr request)
         return;
     }
 
-    if (request->state == FetchRequest::InTranslation) {
+    if (request->state == FetchRequest::InTranslation) {//F1请求状态：已经向ITLB发送请求，等待回应
         DPRINTF(Fetch, "Fetch still in translation, not issuing to"
             " memory\n");
         return;
@@ -288,13 +288,13 @@ Fetch1::tryToSendToTransfers(FetchRequestPtr request)
         /* Discarded and faulting requests carry on through transfers
          *  as Complete/packet == NULL */
 
-        request->state = FetchRequest::Complete;
+        request->state = FetchRequest::Complete;//F1请求状态：向icache端口发送请求后，icahce端口回应
         moveFromRequestsToTransfers(request);
 
         /* Wake up the pipeline next cycle as there will be no event
          *  for this queue->queue transfer */
         cpu.wakeupOnEvent(Pipeline::Fetch1StageId);
-    } else if (request->state == FetchRequest::Translated) {
+    } else if (request->state == FetchRequest::Translated) {//F1请求状态：向ITLB发送请求后，ITLB回应
         if (!request->packet)
             request->makePacket();
 
@@ -308,7 +308,7 @@ Fetch1::tryToSendToTransfers(FetchRequestPtr request)
     }
 }
 
-void
+void//将FetchQueue:requests中的一项 移到 FetchQueue:transfers中
 Fetch1::moveFromRequestsToTransfers(FetchRequestPtr request)
 {
     assert(!requests.empty() && requests.front() == request);
@@ -327,7 +327,7 @@ Fetch1::tryToSend(FetchRequestPtr request)
          *  accidentally fail to deallocate it (or use it!)
          *  later by overwriting it */
         request->packet = NULL;
-        request->state = FetchRequest::RequestIssuing;
+        request->state = FetchRequest::RequestIssuing;//F1请求状态：已经向cache端口发送请求，等待回应
         numFetchesInMemorySystem++;
 
         ret = true;
@@ -336,7 +336,7 @@ Fetch1::tryToSend(FetchRequestPtr request)
             request->id);
     } else {
         /* Needs to be resent, wait for that */
-        icacheState = IcacheNeedsRetry;
+        icacheState = IcacheNeedsRetry; //icache端口在忙，需要等待
 
         DPRINTF(Fetch, "Line fetch needs to retry: %s\n",
             request->id);
@@ -440,7 +440,7 @@ Fetch1::recvTimingResp(PacketPtr response)//接受icache端的resp
     return true;
 }
 
-void
+void//接到再次发送的请求，向icahe端口发送请求
 Fetch1::recvReqRetry()
 {
     DPRINTF(Fetch, "recvRetry\n");
@@ -635,14 +635,14 @@ Fetch1::evaluate()
         }
     }
 
-    if (numInFlightFetches() < fetchLimit) {
+    if (numInFlightFetches() < fetchLimit) {//F1中的队列中还有空间
         ThreadID fetch_tid = getScheduledThread();
 
         if (fetch_tid != InvalidThreadID) {
             DPRINTF(Fetch, "Fetching from thread %d\n", fetch_tid);
 
             /* Generate fetch to selected thread */
-            fetchLine(fetch_tid);
+            fetchLine(fetch_tid);//将  一个fetchline请求  发送到 FetchQueue:requests;
             /* Take up a slot in the fetch queue */
             nextStageReserve[fetch_tid].reserve();
         } else {

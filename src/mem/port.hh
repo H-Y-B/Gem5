@@ -169,7 +169,7 @@ class MasterPort : public Port, public AtomicRequestProtocol,
      *
      * @return If the send was succesful or not.
     */
-    bool sendTimingReq(PacketPtr pkt);
+    bool sendTimingReq(PacketPtr pkt);//master向slave发送请求
 
     /**
      * Check if the slave can handle a timing request.
@@ -201,7 +201,7 @@ class MasterPort : public Port, public AtomicRequestProtocol,
      * is virtual so that the "fake" snoop response port in the
      * coherent crossbar can override the behaviour.
      */
-    virtual void sendRetryResp();
+    virtual void sendRetryResp();//之前在master在忙，没有接受slave的resp，现在不忙了，调用该函数，告诉slave，把resp再发一次
 
   protected:
     /**
@@ -350,7 +350,7 @@ class SlavePort : public Port, public AtomicResponseProtocol,
      * @return If the send was succesful or not.
     */
     bool
-    sendTimingResp(PacketPtr pkt)
+    sendTimingResp(PacketPtr pkt)//slave给master发送resp
     {
         return TimingResponseProtocol::sendResp(_masterPort, pkt);
     }
@@ -373,7 +373,7 @@ class SlavePort : public Port, public AtomicResponseProtocol,
      * sendTimingReq to this slave port and failed.
      */
     void
-    sendRetryReq()
+    sendRetryReq()//之前在slave在忙，没有接受master的req，现在不忙了，调用该函数，告诉master，把req再发一次
     {
         TimingResponseProtocol::sendRetryReq(_masterPort);
     }
