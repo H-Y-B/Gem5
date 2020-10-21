@@ -178,9 +178,10 @@ Fetch1::fetchLine(ThreadID tid)
     request->state = FetchRequest::InTranslation;//F1请求状态：已经向ITLB发送请求，等待回应
 
     /* Reserve space in the queues upstream of requests for results */
-    transfers.reserve();
+    transfers.reserve();//增加容量
     requests.push(request);
 
+    //进行ITLB转换
     /* Submit the translation request.  The response will come
      *  through finish/markDelayed on this request as it bears
      *  the Translation interface */
@@ -345,7 +346,7 @@ Fetch1::tryToSend(FetchRequestPtr request)
     return ret;
 }
 
-void
+void//如果cache端口空闲，那就把 (requests队列中ITLB的请求项) 发送给 icache端口
 Fetch1::stepQueues()
 {
     IcacheState old_icache_state = icacheState;
@@ -419,7 +420,7 @@ Fetch1::recvTimingResp(PacketPtr response)//接受icache端的resp
     fetch_request->packet = response;
 
     numFetchesInMemorySystem--;
-    fetch_request->state = FetchRequest::Complete;
+    fetch_request->state = FetchRequest::Complete;//F1请求状态：向icache端口发送请求后，icahce端口回应
 
     if (DTRACE(MinorTrace))
         minorTraceResponseLine(name(), fetch_request);
@@ -569,7 +570,7 @@ Fetch1::evaluate()
     assert(line_out.isBubble());
 
     for (ThreadID tid = 0; tid < cpu.numThreads; tid++)
-        fetchInfo[tid].blocked = !nextStageReserve[tid].canReserve();
+        fetchInfo[tid].blocked = !nextStageReserve[tid].canReserve();//F2阶段的buffer是否有空闲的地方
 
 	/*两种情况：
 	 * 1.Exe and F1 对同一个线程 重定向
@@ -634,7 +635,7 @@ Fetch1::evaluate()
             }
         }
     }
-
+                                            //默认 < 1 : 只要requests和transfers队列中存在 请求，就不去 fetchline
     if (numInFlightFetches() < fetchLimit) {//F1中的队列中还有空间
         ThreadID fetch_tid = getScheduledThread();
 
@@ -642,9 +643,9 @@ Fetch1::evaluate()
             DPRINTF(Fetch, "Fetching from thread %d\n", fetch_tid);
 
             /* Generate fetch to selected thread */
-            fetchLine(fetch_tid);//将  一个fetchline请求  发送到 FetchQueue:requests;
+            fetchLine(fetch_tid);//将  一个fetchline请求  发送到 FetchQueue:requests,等待进行ITLB转换
             /* Take up a slot in the fetch queue */
-            nextStageReserve[fetch_tid].reserve();
+            nextStageReserve[fetch_tid].reserve();//申请的 F2阶段debuffer中的 空间
         } else {
             DPRINTF(Fetch, "No active threads available to fetch from\n");
         }
@@ -653,8 +654,12 @@ Fetch1::evaluate()
 
     /* Halting shouldn't prevent fetches in flight from being processed */
     /* Step fetches through the icachePort queues and memory system */
-    stepQueues();
+    stepQueues();//如果cache端口空闲，那就把 (requests队列中ITLB的请求项) 发送给 icache端口
 
+
+
+
+    /*FetchQueue:transfers -> F2:nextStageReserve*/
     /* As we've thrown away early lines, if there is a line, it must
      *  be from the right stream */
     if (!transfers.empty() &&               //FetchQueue:transfers
@@ -662,8 +667,8 @@ Fetch1::evaluate()
     {
         Fetch1::FetchRequestPtr response = transfers.front();//FetchQueue:transfers
 
-        if (response->isDiscardable()) {
-            nextStageReserve[response->id.threadId].freeReservation();
+        if (response->isDiscardable()) {//如果 transfers队列中的response 可以被丢弃
+            nextStageReserve[response->id.threadId].freeReservation();//把之前 申请的 F2阶段debuffer中 空间释放掉
 
             DPRINTF(Fetch, "Discarding translated fetch as it's for"
                 " an old stream\n");
