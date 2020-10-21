@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 # Copyright (c) 2012-2013, 2015-2017 ARM Limited
 # Copyright (c) 2020 Barkhausen Institut
 # All rights reserved.
@@ -128,7 +129,7 @@ class BaseCPU(ClockedObject):
     system = Param.System(Parent.any, "system object")
     cpu_id = Param.Int(-1, "CPU identifier")
     socket_id = Param.Unsigned(0, "Physical Socket identifier")
-    numThreads = Param.Unsigned(1, "number of HW thread contexts")
+    numThreads = Param.Unsigned(1, "number of HW thread contexts")#硬件线程的个数,默认是1
     pwr_gating_latency = Param.Cycles(300,
         "Latency to enter power gating state when all contexts are suspended")
 

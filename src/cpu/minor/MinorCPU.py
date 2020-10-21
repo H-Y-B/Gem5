@@ -199,7 +199,7 @@ class MinorCPU(BaseCPU):
     def support_take_over(cls):
         return True
 
-    threadPolicy = Param.ThreadPolicy('RoundRobin',
+    threadPolicy = Param.ThreadPolicy('RoundRobin',#轮询
             "Thread scheduling policy")
     fetch1FetchLimit = Param.Unsigned(1,
         "Number of line fetches allowable in flight at once")
