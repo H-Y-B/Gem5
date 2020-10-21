@@ -3,7 +3,7 @@ config=se.py
 riscv:
 	python	/usr/bin/scons build/RISCV/gem5.opt -j8
 	#scons build/RISCV/gem5.opt
-
+    #python /usr/bin/scons USE_HDF5=0 build/RISCV/gem5.opt -j8
 riscv-hello:
 	./build/RISCV/gem5.opt ./configs/myconfig/se.py -c ./tests/test-progs/hello/bin/riscv/linux/hello
 riscv-hello-o3-pipeline:
