@@ -19,7 +19,7 @@ clean-m5out:
 	rm -rf m5out/
 
 spec-400:
-	./build/RISCV/gem5.opt ./configs/myconfig/se.py -c $(spec_run)/400.perlbench/perlbench_base.riscv -o "-I. -I$(spec_run)/lib $(spec_run)/attrs.pl"
+	./build/RISCV/gem5.opt ./configs/myconfig/se.py -c $(spec_run)/400.perlbench/perlbench_base.riscv -o "-I. -I$(spec_run)/400.perlbench/lib $(spec_run)/400.perlbench/attrs.pl"
 spec-401:
 	./build/RISCV/gem5.opt ./configs/myconfig/se.py --mem-size=1024MB -c $(spec_run)/401.bzip2/bzip2_base.riscv -o "$(spec_run)/401.bzip2/input.program 5"
 
