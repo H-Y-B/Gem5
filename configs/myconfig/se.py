@@ -61,6 +61,16 @@ def get_processes(options):
             process.cmd = [wrkld] + pargs[idx].split()
         else:
             process.cmd = [wrkld]
+       
+        print ("命令解析：")
+        print ("wrkld:       ",wrkld)
+        print ("pargs:       ",pargs)
+        #print (process.cmd)
+        for cm in process.cmd:
+            print ("cmd:         ",cm )
+        print ("inputs:      ", inputs)
+        print ("outputs:     ",outputs)
+        print ("errouts:     ",errouts)
 
         if len(inputs) > idx:
             process.input = inputs[idx]
@@ -83,13 +93,17 @@ def get_processes(options):
 
 parser = optparse.OptionParser()
 Options.addCommonOptions(parser) #向对象parser中增加option
-Options.addSEOptions(parser)
+Options.addSEOptions(parser)     #向对象parser中增加option
 
 if '--ruby' in sys.argv:
     Ruby.define_options(parser)
 
 #参数分解
 (options, args) = parser.parse_args()
+
+print ("Options:    ",options)
+print ("Args   :    ",   args)
+
 
 if args:
     print("Error: script doesn't take any positional arguments")
@@ -122,7 +136,7 @@ if options.bench:
                   file=sys.stderr)
             sys.exit(1)
 elif options.cmd:
-    multiprocesses, numThreads = get_processes(options)
+    multiprocesses, numThreads = get_processes(options)#調用上面的函數
 else:
     print("No workload specified. Exiting!\n", file=sys.stderr)
     sys.exit(1)
