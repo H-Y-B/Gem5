@@ -1,34 +1,34 @@
-spec_run=/home/huangyubiao-DomainA/arm-spec17-intrate-test-base-gnueabihf
-tag=base.arm64-64
+spec_run=/home/huangyubiao-DomainA/arm-spec17-intrate-test-base
+tag=base.mytest-64
 TARGET=$(target)
 
-500_path=$(spec_run)/500.perlbench_r/
-502_path=$(spec_run)/502.gcc_r/
-503_path=$(spec_run)/503.bwaves_r/
-505_path=$(spec_run)/505.mcf_r/
-507_path=$(spec_run)/507.cactuBSSN_r/
-508_path=$(spec_run)/508.namd_r/
-510_path=$(spec_run)/510.parest_r/
-511_path=$(spec_run)/511.povray_r/
-519_path=$(spec_run)/519.lbm_r/
-520_path=$(spec_run)/520.omnetpp_r/
-521_path=$(spec_run)/521.wrf_r/
-523_path=$(spec_run)/523.xalancbmk_r/
-525_path=$(spec_run)/525.x264_r/            #error!
-526_path=$(spec_run)/526.blender_r/
-527_path=$(spec_run)/527.cam4_r/
-531_path=$(spec_run)/531.deepsjeng_r/
-538_path=$(spec_run)/538.imagick_r/
-541_path=$(spec_run)/541.leela_r/
-544_path=$(spec_run)/544.nab_r/
-548_path=$(spec_run)/548.exchange2_r/
-549_path=$(spec_run)/549.fotonik3d_r/
-554_path=$(spec_run)/554.roms_r/
-557_path=$(spec_run)/557.xz_r/
+500_path=$(spec_run)/500.perlbench_r
+502_path=$(spec_run)/502.gcc_r
+503_path=$(spec_run)/503.bwaves_r
+505_path=$(spec_run)/505.mcf_r
+507_path=$(spec_run)/507.cactuBSSN_r
+508_path=$(spec_run)/508.namd_r
+510_path=$(spec_run)/510.parest_r
+511_path=$(spec_run)/511.povray_r
+519_path=$(spec_run)/519.lbm_r
+520_path=$(spec_run)/520.omnetpp_r
+521_path=$(spec_run)/521.wrf_r
+523_path=$(spec_run)/523.xalancbmk_r
+525_path=$(spec_run)/525.x264_r
+526_path=$(spec_run)/526.blender_r
+527_path=$(spec_run)/527.cam4_r
+531_path=$(spec_run)/531.deepsjeng_r
+538_path=$(spec_run)/538.imagick_r
+541_path=$(spec_run)/541.leela_r
+544_path=$(spec_run)/544.nab_r
+548_path=$(spec_run)/548.exchange2_r
+549_path=$(spec_run)/549.fotonik3d_r
+554_path=$(spec_run)/554.roms_r
+557_path=$(spec_run)/557.xz_r
 
 
 500_exe=$(500_path)/perlbench_r_$(tag)
-502_exe=$(502_path)/gcc_r_$(tag)
+502_exe=$(502_path)/cpugcc_r_$(tag)
 503_exe=$(503_path)/bwaves_r_$(tag)
 505_exe=$(505_path)/mcf_r_$(tag)
 507_exe=$(507_path)/cactuBSSN_r_$(tag)
@@ -38,8 +38,8 @@ TARGET=$(target)
 519_exe=$(519_path)/lbm_r_$(tag)
 520_exe=$(520_path)/omnetpp_r_$(tag)
 521_exe=$(521_path)/wrf_r_$(tag)
-523_exe=$(523_path)/xalancbmk_r_$(tag)
-525_exe=$(525_path)/x264_r/      _$(tag)
+523_exe=$(523_path)/cpuxalan_r_$(tag)
+525_exe=$(525_path)/x264_r_$(tag)
 526_exe=$(526_path)/blender_r_$(tag)
 527_exe=$(527_path)/cam4_r_$(tag)
 531_exe=$(531_path)/deepsjeng_r_$(tag)
@@ -66,6 +66,7 @@ TARGET=$(target)
 521_opt=  #nothing
 523_opt=-v $(523_path)/test.xml $(523_path)/xalanc.xsl
 525_opt=--dumpyuv 50 --frames 156 -o BuckBunny_New.264 BuckBunny.yuv 1280x720
+#525_opt=-i $(525_path)/BuckBunny.264
 526_opt=cube.blend --render-output cube_ --threads 1 -b -F RAWTGA -s 1 -e 1 -a
 527_opt=  #nothing
 531_opt=$(531_path)/test.txt
@@ -90,4 +91,12 @@ TARGET=$(target)
 
 TAR=$(shell echo $(TARGET)|awk -F '-' '{ print $$1 }')
 spec17-test:
-	./build/ARM/gem5.opt ./configs/example/se.py -c $($(TAR)_exe) -o "$($(TARGET)_opt)"
+	./build/ARM/gem5.opt ./configs/example/se.py --mem-size=2048MB -c $($(TAR)_exe) -o "$($(TARGET)_opt)"
+
+spec17-test-help:
+	@echo "make spec17-text target=?"
+	@echo "target:                          "
+	@echo "       int-rate:              " 
+	@echo "       500-(1、2) 502 505 520 523 525 531 541 548 557-(1~12)"
+	@echo "       fp-rate:            "
+	@echo "       503 507 508 510 511 519 521 526 527 538 544 549 554             "
