@@ -47,6 +47,13 @@ def get_processes(options):
     if options.options != "":
         pargs = options.options.split(';')
 
+    print ("options.cmd:     ",options.cmd)
+    print ("workloads:       ",workloads)
+    print ("options.input:   ",options.input)
+    print ("options.output:  ",options.output)
+    print ("options.errout:  ",options.errout)
+    print ("options.options: ",options.options)
+    print ("options.bench:   ",options.bench)
     idx = 0
     for wrkld in workloads:
         process = Process(pid = 100 + idx)
@@ -64,13 +71,9 @@ def get_processes(options):
        
         print ("命令解析：")
         print ("wrkld:       ",wrkld)
-        print ("pargs:       ",pargs)
         #print (process.cmd)
         for cm in process.cmd:
             print ("cmd:         ",cm )
-        print ("inputs:      ", inputs)
-        print ("outputs:     ",outputs)
-        print ("errouts:     ",errouts)
 
         if len(inputs) > idx:
             process.input = inputs[idx]
@@ -103,6 +106,9 @@ if '--ruby' in sys.argv:
 
 print ("Options:    ",options)
 print ("Args   :    ",   args)
+print ("options.num_cpus   :    ",options.num_cpus)
+print ("options.spec_input   :    ",options.spec_input)
+print ("options.mem_size   :    ",options.mem_size)
 
 
 if args:

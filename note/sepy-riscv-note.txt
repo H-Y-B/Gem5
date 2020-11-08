@@ -186,7 +186,7 @@ Options:
                         
   --smt                 Only used if multiple programs are specified. 
                         If true, then the number of threads per cpu is same as the number of programs.
-                        
+-----------------------------------------------------------------------------------------------------------------    
   --elastic-trace-en    Enable capture of data dependency and instruction
                         fetch traces using elastic trace probe.
   --inst-trace-file=INST_TRACE_FILE
@@ -197,6 +197,7 @@ Options:
                         Data dependency trace file input to
                         Elastic Trace probe in a capture simulation and
                         Trace CPU in a replay simulation
+-----------------------------------------------------------------------------------------------------------------    
   -l, --lpae            
   -V, --virtualisation  
   --dist                Parallel distributed gem5 simulation.
@@ -292,6 +293,7 @@ Options:
 
 
 
+-----------------------------------------------------------------------------------------------------------------    
   -c CMD, --cmd=CMD     The binary to run in syscall emulation mode.
   -o OPTIONS, --options=OPTIONS
                         The options to pass to the binary, use " "
@@ -303,6 +305,7 @@ Options:
                         Read stdin from a file.
   --output=OUTPUT       Redirect stdout to a file.
   --errout=ERROUT       Redirect stderr to a file.
+-----------------------------------------------------------------------------------------------------------------    
 
 
 
