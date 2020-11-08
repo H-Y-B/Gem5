@@ -1,7 +1,7 @@
 referce link：https://blog.csdn.net/u012822903/article/details/62227021
 
 **********************************************************************************************
-[1]wget http://www.m5sim.org/dist/current/m5_system_2.0b3.tar.bz2
+[1]wget http://www.m5sim.org/dist/current/x86/x86-system.tar.bz2
 [2]tar -xjf x86-system.tar.bz2
 [3]export M5_PATH= ..../fs-image
 [4]build/X86/gem5.opt configs/exapmle/fs.py
