@@ -68,7 +68,7 @@ Fetch2::Fetch2(const std::string &name,
     outputWidth(params.decodeInputWidth),
     processMoreThanOneInput(params.fetch2CycleInput),
     branchPredictor(*params.branchPred),
-    fetchInfo(params.numThreads),//py参数
+    fetchInfo(params.numThreads),
     threadPriority(0)
 {
     if (outputWidth < 1)
@@ -89,7 +89,7 @@ Fetch2::Fetch2(const std::string &name,
 }
 
 const ForwardLineData *
-Fetch2::getInput(ThreadID tid)
+Fetch2::getInput(ThreadID tid)//读取F1阶段放在inputBuffer中的数据
 {
     /* Get a line from the inputBuffer to work with */
     if (!inputBuffer[tid].empty()) {
@@ -100,7 +100,7 @@ Fetch2::getInput(ThreadID tid)
 }
 
 void
-Fetch2::popInput(ThreadID tid)
+Fetch2::popInput(ThreadID tid)//将 F1阶段放在inputBuffer中的数据 pop
 {
     if (!inputBuffer[tid].empty()) {
         inputBuffer[tid].front().freeLine();
@@ -111,7 +111,7 @@ Fetch2::popInput(ThreadID tid)
 }
 
 void
-Fetch2::dumpAllInput(ThreadID tid)
+Fetch2::dumpAllInput(ThreadID tid)//将 F1阶段放在inputBuffer中的数据 全部清空
 {
     DPRINTF(Fetch, "Dumping whole input buffer\n");
     while (!inputBuffer[tid].empty())
@@ -203,9 +203,9 @@ Fetch2::predictBranch(MinorDynInstPtr inst, BranchData &branch)
             inst->id.fetchSeqNum, inst_pc,
             inst->id.threadId))
         {
-            inst->predictedTaken = true;
-            inst->predictedTarget = inst_pc;
-            branch.target = inst_pc;
+            inst->predictedTaken = true;     //预测跳转
+            inst->predictedTarget = inst_pc; //预测跳转地址
+            branch.target = inst_pc;         //预测跳转地址
         }
     } else {
         DPRINTF(Branch, "Not attempting prediction for inst: %s\n", *inst);
@@ -238,11 +238,11 @@ Fetch2::evaluate()
 {
     /* Push input onto appropriate input buffer */
     if (!inp.outputWire->isBubble())
-        inputBuffer[inp.outputWire->id.threadId].setTail(*inp.outputWire);
+        inputBuffer[inp.outputWire->id.threadId].setTail(*inp.outputWire);//从F1->F2的Latch中取出数据 到inputBUffer
 
-    ForwardInstData &insts_out = *out.inputWire;
+    ForwardInstData &insts_out = *out.inputWire; //F2 -> D
     BranchData prediction;
-    BranchData &branch_inp = *branchInp.outputWire;
+    BranchData &branch_inp = *branchInp.outputWire;//E -> F2
 
     assert(insts_out.isBubble());
 
@@ -265,9 +265,9 @@ Fetch2::evaluate()
     for (ThreadID tid = 0; tid < cpu.numThreads; tid++) {//遍历线程
         Fetch2ThreadInfo &thread = fetchInfo[tid];
 
-        thread.blocked = !nextStageReserve[tid].canReserve();
+        thread.blocked = !nextStageReserve[tid].canReserve();//执行阶段的InputBuffer是否还有空间
 
-        const ForwardLineData *line_in = getInput(tid);
+        const ForwardLineData *line_in = getInput(tid);//读取F1阶段放在inputBuffer中的数据
 
         while (line_in &&
             thread.expectedStreamSeqNum == line_in->id.streamSeqNum &&
@@ -282,23 +282,23 @@ Fetch2::evaluate()
 
             if (processMoreThanOneInput) {
                 DPRINTF(Fetch, "Wrapping\n");
-                line_in = getInput(tid);
+                line_in = getInput(tid);//读取F1阶段放在inputBuffer中的数据
             } else {
                 line_in = NULL;
             }
         }
-    }
+    }//end for tid
 
-    ThreadID tid = getScheduledThread();
+    ThreadID tid = getScheduledThread();          //线程调度
     DPRINTF(Fetch, "Scheduled Thread: %d\n", tid);
 
     assert(insts_out.isBubble());
     if (tid != InvalidThreadID) {
         Fetch2ThreadInfo &fetch_info = fetchInfo[tid];
 
-        const ForwardLineData *line_in = getInput(tid);
+        const ForwardLineData *line_in = getInput(tid);//读取F1阶段放在inputBuffer中的数据
 
-        unsigned int output_index = 0;
+        unsigned int output_index = 0;//向Decode阶段发送的指令 索引
 
         /* Pack instructions into the output while we can.  This may involve
          * using more than one input line.  Note that lineWidth will be 0
@@ -306,11 +306,11 @@ Fetch2::evaluate()
         while (line_in &&
             (line_in->isFault() ||
                 fetch_info.inputIndex < line_in->lineWidth) && /* More input */
-            output_index < outputWidth && /* More output to fill */
+            output_index < outputWidth && /* More output to fill */  //Width (in instructions) of input to Decode
             prediction.isBubble() /* No predicted branch */)
         {
             ThreadContext *thread = cpu.getContext(line_in->id.threadId);
-            TheISA::Decoder *decoder = thread->getDecoderPtr();
+            TheISA::Decoder *decoder = thread->getDecoderPtr();//获取译码器
 
             /* Discard line due to prediction sequence number being wrong but
              * without the streamSeqNum number having changed */
@@ -342,14 +342,14 @@ Fetch2::evaluate()
              *  is to be packed into the output */
             MinorDynInstPtr dyn_inst = NULL;
 
-            if (discard_line) {
+            if (discard_line) {//丢弃cache line
                 /* Rest of line was from an older prediction in the same
                  *  stream */
                 DPRINTF(Fetch, "Discarding line %s (from inputIndex: %d)"
                     " due to predictionSeqNum mismatch (expected: %d)\n",
                     line_in->id, fetch_info.inputIndex,
                     fetch_info.predictionSeqNum);
-            } else if (line_in->isFault()) {
+            } else if (line_in->isFault()) {//cache line 有错
                 /* Pack a fault as a MinorDynInst with ->fault set */
 
                 /* Make a new instruction and pick up the line, stream,
@@ -376,7 +376,7 @@ Fetch2::evaluate()
 
                 /* The instruction is wholly in the line, can just
                  *  assign */
-                auto inst_word = *reinterpret_cast<TheISA::MachInst *>
+                auto inst_word = *reinterpret_cast<TheISA::MachInst *> //取出32位指令
                                   (line + fetch_info.inputIndex);
 
                 if (!decoder->instReady()) {
@@ -452,14 +452,14 @@ Fetch2::evaluate()
 #endif
 
                     /* Advance PC for the next instruction */
-                    TheISA::advancePC(fetch_info.pc, decoded_inst);
+                    TheISA::advancePC(fetch_info.pc, decoded_inst);//PC +4 or +2
 
                     /* Predict any branches and issue a branch if
                      *  necessary */
-                    predictBranch(dyn_inst, prediction);
+                    predictBranch(dyn_inst, prediction);//根据指令dyn_inst，进行预测分支； prediction为预测结果
                 } else {
                     DPRINTF(Fetch, "Inst not ready yet\n");
-                }
+                }//end if (decoder->instReady()) 
 
                 /* Step on the pointer into the line if there's no
                  *  complete instruction waiting */
@@ -471,18 +471,20 @@ Fetch2::evaluate()
                     line_in->pc, fetch_info.inputIndex, line_in->lineBaseAddr,
                     line_in->lineWidth);
                 }
-            }
+            }//end if
 
+
+            //F2阶段 -> Decode阶段 
             if (dyn_inst) {
                 /* Step to next sequence number */
                 fetch_info.fetchSeqNum++;
 
                 /* Correctly size the output before writing */
                 if (output_index == 0) {
-                    insts_out.resize(outputWidth);
+                    insts_out.resize(outputWidth);//申请空间 ；大小 为  F2阶段 -> Decode阶段 的指令数
                 }
                 /* Pack the generated dynamic instruction into the output */
-                insts_out.insts[output_index] = dyn_inst;
+                insts_out.insts[output_index] = dyn_inst;//F2阶段 -> Decode阶段
                 output_index++;
 
                 /* Output MinorTrace instruction info for
@@ -525,16 +527,17 @@ Fetch2::evaluate()
                 DPRINTF(Fetch, "Wrapping\n");
                 line_in = getInput(tid);
             }
-        }
+        }//end of while
 
         /* The rest of the output (if any) should already have been packed
          *  with bubble instructions by insts_out's initialisation */
-    }
+    }//end of if (tid != InvalidThreadID)
+
     if (tid == InvalidThreadID) {
         assert(insts_out.isBubble());
     }
     /** Reserve a slot in the next stage and output data */
-    *predictionOut.inputWire = prediction;
+    *predictionOut.inputWire = prediction;//F2 -> F1 阶段
 
     /* If we generated output, reserve space for the result in the next stage
      *  and mark the stage as being active this cycle */
@@ -590,7 +593,7 @@ Fetch2::getScheduledThread()
    return InvalidThreadID;
 }
 
-bool
+bool//F2阶段是否排空
 Fetch2::isDrained()
 {
     for (const auto &buffer : inputBuffer) {

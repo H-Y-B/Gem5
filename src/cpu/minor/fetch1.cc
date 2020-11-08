@@ -553,7 +553,7 @@ Fetch1::processResponse(Fetch1::FetchRequestPtr response,
             response->fault->name());
         thread.state = Fetch1::FetchWaitingForPC;
     } else {
-        line.adoptPacketData(packet);
+        line.adoptPacketData(packet);//将cahce line 发送到 line(F2)
         /* Null the response's packet to prevent the response from trying to
          *  deallocate the packet */
         response->packet = NULL;

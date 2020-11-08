@@ -63,17 +63,17 @@ class Fetch2 : public Named
     MinorCPU &cpu;
 
     /** Input port carrying lines from Fetch1 */
-    Latch<ForwardLineData>::Output inp;
+    Latch<ForwardLineData>::Output inp;//F1 -> F2
 
     /** Input port carrying branches from Execute.  This is a snoop of the
      *  data provided to F1. */
-    Latch<BranchData>::Output branchInp;
+    Latch<BranchData>::Output branchInp; //E -> F2
 
     /** Output port carrying predictions back to Fetch1 */
-    Latch<BranchData>::Input predictionOut;
+    Latch<BranchData>::Input predictionOut;//F2 -> F1 阶段 （分支预测）
 
     /** Output port carrying instructions into Decode */
-    Latch<ForwardInstData>::Input out;
+    Latch<ForwardInstData>::Input out; //F2 -> D
 
     /** Interface to reserve space in the next stage */
     std::vector<InputBuffer<ForwardInstData>> &nextStageReserve;//执行阶段的InputBuffer
@@ -90,7 +90,7 @@ class Fetch2 : public Named
 
   public:
     /* Public so that Pipeline can pass it to Fetch1 */
-    std::vector<InputBuffer<ForwardLineData>> inputBuffer;
+    std::vector<InputBuffer<ForwardLineData>> inputBuffer;  //F1将数据放在这里
 
   protected:
     /** Data members after this line are cycle-to-cycle state */
@@ -121,7 +121,7 @@ class Fetch2 : public Named
 
         /** Index into an incompletely processed input line that instructions
          *  are to be extracted from */
-        unsigned int inputIndex;
+        unsigned int inputIndex;//cahceline中指令的索引
 
 
         /** Remembered program counter value.  Between contiguous lines, this
@@ -163,6 +163,7 @@ class Fetch2 : public Named
     std::vector<Fetch2ThreadInfo> fetchInfo;
     ThreadID threadPriority;
 
+    //stats.txt统计信息
     /** Stats */
     Stats::Scalar intInstructions;
     Stats::Scalar fpInstructions;
