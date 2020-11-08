@@ -1,0 +1,34 @@
+referce link：https://blog.csdn.net/u012822903/article/details/62227021
+
+**********************************************************************************************
+[1]wget http://www.m5sim.org/dist/current/m5_system_2.0b3.tar.bz2
+[2]tar -xjf x86-system.tar.bz2
+[3]export M5_PATH= ..../fs-image
+[4]build/X86/gem5.opt configs/exapmle/fs.py
+[5]
+	in configs/common/SysPath.py
+	except KeyError:
+				path=['/dist/m5/system','..../fs-image']
+[6]
+	in configs/common/Benchmarks.py
+	x86root.img -> linux-x86.img
+
+
+
+
+[7](sudo)build/X86/gem5.opt configs/example/fs.py --kernel=x86_64-vmlinux-2.6.22.9 --disk-image=linux-x86.img
+
+
+
+
+[8]open other terminal
+[9]cd util/term/
+[10] make
+[11] sudo make install
+[12] sudo ./m5term 127.0.0.1 port-id
+**********************************************************************************************
+mountfile
+
+sudo mount -o,loop,offset=32256 fs-image/disks/linux-x86.img /mnt
+sudo umount /mnt
+[7]~[12]
