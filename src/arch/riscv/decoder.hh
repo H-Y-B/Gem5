@@ -42,7 +42,7 @@ namespace RiscvISA
 {
 
 class ISA;
-class Decoder
+class Decoder//RISCV 译码器
 {
   private:
     DecodeCache::InstMap<ExtMachInst> instMap;
@@ -52,7 +52,7 @@ class Decoder
 
   protected:
     //The extended machine instruction being generated
-    ExtMachInst emi;
+    ExtMachInst emi;  //扩展机器指令
     bool instDone;
 
   public:

@@ -53,14 +53,14 @@ Decoder::moreBytes(const PCState &pc, Addr fetchPC, MachInst inst)
     DPRINTF(Decode, "Requesting bytes 0x%08x from address %#x\n", inst,
             fetchPC);
 
-    bool aligned = pc.pc() % sizeof(MachInst) == 0;
+    bool aligned = pc.pc() % sizeof(MachInst) == 0;//指令PC对齐 32bit
     if (aligned) {
         emi = inst;
         if (compressed(emi))
             emi &= LowerBitMask;
         more = !compressed(emi);
         instDone = true;
-    } else {
+    } else {      //没有对其
         if (mid) {
             assert((emi & UpperBitMask) == 0);
             emi |= (inst & LowerBitMask) << sizeof(MachInst)*4;
@@ -98,9 +98,9 @@ Decoder::decode(RiscvISA::PCState &nextPC)
     instDone = false;
 
     if (compressed(emi)) {
-        nextPC.npc(nextPC.instAddr() + sizeof(MachInst) / 2);
+        nextPC.npc(nextPC.instAddr() + sizeof(MachInst) / 2);//+2 Byte
     } else {
-        nextPC.npc(nextPC.instAddr() + sizeof(MachInst));
+        nextPC.npc(nextPC.instAddr() + sizeof(MachInst));    //+4 Byte
     }
 
     return decode(emi, nextPC.instAddr());

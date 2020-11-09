@@ -48,7 +48,7 @@ namespace RiscvISA
 {
 
 typedef uint32_t MachInst;
-typedef uint64_t ExtMachInst;
+typedef uint64_t ExtMachInst;//64bit指令 
 
 class PCState : public GenericISA::UPCState<MachInst>
 {
