@@ -52,9 +52,9 @@ Decode::Decode(const std::string &name,
     std::vector<InputBuffer<ForwardInstData>> &next_stage_input_buffer) :
     Named(name),
     cpu(cpu_),
-    inp(inp_),
-    out(out_),
-    nextStageReserve(next_stage_input_buffer),
+    inp(inp_),//@f2ToD.output()
+    out(out_),//@dToE.input()
+    nextStageReserve(next_stage_input_buffer),//@execute.inputBuffer
     outputWidth(params.executeInputWidth),
     processMoreThanOneInput(params.decodeCycleInput),
     decodeInfo(params.numThreads),
@@ -127,18 +127,18 @@ Decode::evaluate()
     if (!inp.outputWire->isBubble())
         inputBuffer[inp.outputWire->threadId].setTail(*inp.outputWire);
 
-    ForwardInstData &insts_out = *out.inputWire;
+    ForwardInstData &insts_out = *out.inputWire;//D -> E 阶段
 
     assert(insts_out.isBubble());
 
     for (ThreadID tid = 0; tid < cpu.numThreads; tid++)
-        decodeInfo[tid].blocked = !nextStageReserve[tid].canReserve();
+        decodeInfo[tid].blocked = !nextStageReserve[tid].canReserve();//@执行阶段的inputbuffer是否还有空间
 
-    ThreadID tid = getScheduledThread();
+    ThreadID tid = getScheduledThread();//线程调度
 
     if (tid != InvalidThreadID) {
         DecodeThreadInfo &decode_info = decodeInfo[tid];
-        const ForwardInstData *insts_in = getInput(tid);
+        const ForwardInstData *insts_in = getInput(tid);//拿出 F2阶段放入  D阶段的inputbuffer 中的数据
 
         unsigned int output_index = 0;
 
@@ -241,9 +241,9 @@ Decode::evaluate()
                 /* Correctly size the output before writing */
                 if (output_index == 0) insts_out.resize(outputWidth);
                 /* Push into output */
-                insts_out.insts[output_index] = output_inst;
+                insts_out.insts[output_index] = output_inst;//D->E 阶段
                 output_index++;
-            }
+            }//end if (inst->isBubble()) else 
 
             /* Have we finished with the input? */
             if (decode_info.inputIndex == insts_in->width()) {
@@ -259,7 +259,7 @@ Decode::evaluate()
                     insts_in = getInput(tid);
                 }
             }
-        }
+        }//end while
 
         /* The rest of the output (if any) should already have been packed
          *  with bubble instructions by insts_out's initialisation
@@ -267,7 +267,7 @@ Decode::evaluate()
          *  for (; output_index < outputWidth; output_index++)
          *      assert(insts_out.insts[output_index]->isBubble());
          */
-    }
+    }//end if (tid != InvalidThreadID) 
 
     /* If we generated output, reserve space for the result in the next stage
      *  and mark the stage as being active this cycle */
@@ -275,7 +275,7 @@ Decode::evaluate()
         /* Note activity of following buffer */
         cpu.activityRecorder->activity();
         insts_out.threadId = tid;
-        nextStageReserve[tid].reserve();
+        nextStageReserve[tid].reserve();//@执行阶段的inputbuffer扩展空间
     }
 
     /* If we still have input to process and somewhere to put it,

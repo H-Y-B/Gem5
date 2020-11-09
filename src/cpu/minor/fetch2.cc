@@ -60,11 +60,11 @@ Fetch2::Fetch2(const std::string &name,
     std::vector<InputBuffer<ForwardInstData>> &next_stage_input_buffer) :
     Named(name),
     cpu(cpu_),
-    inp(inp_),
-    branchInp(branchInp_),
-    predictionOut(predictionOut_),
-    out(out_),
-    nextStageReserve(next_stage_input_buffer),
+    inp(inp_),                    //@f1ToF2.output()
+    branchInp(branchInp_),        //@eToF1.output()
+    predictionOut(predictionOut_),//@f2ToF1.input()
+    out(out_),                    //@f2ToD.input()
+    nextStageReserve(next_stage_input_buffer),//@decode.inputBuffer
     outputWidth(params.decodeInputWidth),
     processMoreThanOneInput(params.fetch2CycleInput),
     branchPredictor(*params.branchPred),
@@ -218,9 +218,10 @@ Fetch2::predictBranch(MinorDynInstPtr inst, BranchData &branch)
         thread.expectedStreamSeqNum = inst->id.streamSeqNum;
 
         BranchData new_branch = BranchData(BranchData::BranchPrediction,
-            inst->id.threadId,
-            inst->id.streamSeqNum, thread.predictionSeqNum + 1,
-            inst->predictedTarget, inst);
+                                           inst->id.threadId,
+                                           inst->id.streamSeqNum, 
+                                           thread.predictionSeqNum + 1,
+                                           inst->predictedTarget, inst);
 
         /* Mark with a new prediction number by the stream number of the
          *  instruction causing the prediction */
@@ -241,8 +242,8 @@ Fetch2::evaluate()
         inputBuffer[inp.outputWire->id.threadId].setTail(*inp.outputWire);//从F1->F2的Latch中取出数据 到inputBUffer
 
     ForwardInstData &insts_out = *out.inputWire; //F2 -> D
-    BranchData prediction;
-    BranchData &branch_inp = *branchInp.outputWire;//E -> F2
+    BranchData prediction;//F2阶段得到的分支预测结果
+    BranchData &branch_inp = *branchInp.outputWire;//E -> F2 (执行阶段需要改变 PC：分支预测纠正、中断）
 
     assert(insts_out.isBubble());
 
@@ -277,7 +278,7 @@ Fetch2::evaluate()
                 " due to predictionSeqNum mismatch (expected: %d)\n",
                 line_in->id, thread.predictionSeqNum);
 
-            popInput(tid);
+            popInput(tid);//@把带有错误分支序列号的 line 丢弃
             fetchInfo[tid].havePC = false;
 
             if (processMoreThanOneInput) {
@@ -326,9 +327,10 @@ Fetch2::evaluate()
             if (!discard_line && (!fetch_info.havePC || set_pc)) {
                 /* Set the inputIndex to be the MachInst-aligned offset
                  *  from lineBaseAddr of the new PC value */
-                fetch_info.inputIndex =
+                fetch_info.inputIndex =//@cahce line中的 取指 索引
                     (line_in->pc.instAddr() & BaseCPU::PCMask) -
                     line_in->lineBaseAddr;
+
                 DPRINTF(Fetch, "Setting new PC value: %s inputIndex: 0x%x"
                     " lineBaseAddr: 0x%x lineWidth: 0x%x\n",
                     line_in->pc, fetch_info.inputIndex, line_in->lineBaseAddr,
@@ -379,7 +381,7 @@ Fetch2::evaluate()
                 auto inst_word = *reinterpret_cast<TheISA::MachInst *> //取出32位指令
                                   (line + fetch_info.inputIndex);
 
-                if (!decoder->instReady()) {
+                if (!decoder->instReady()) {//@译码单元 还有指令在翻译
                     decoder->moreBytes(fetch_info.pc,
                         line_in->lineBaseAddr + fetch_info.inputIndex,
                         inst_word);
@@ -390,7 +392,7 @@ Fetch2::evaluate()
                 /* Maybe make the above a loop to accomodate ISAs with
                  *  instructions longer than sizeof(MachInst) */
 
-                if (decoder->instReady()) {
+                if (decoder->instReady()) {//@译码单元 指令翻译完毕
                     /* Make a new instruction and pick up the line, stream,
                      *  prediction, thread ids from the incoming line */
                     dyn_inst = new MinorDynInst(line_in->id);//给指令分配空间
@@ -456,7 +458,7 @@ Fetch2::evaluate()
 
                     /* Predict any branches and issue a branch if
                      *  necessary */
-                    predictBranch(dyn_inst, prediction);//根据指令dyn_inst，进行预测分支； prediction为预测结果
+                    predictBranch(dyn_inst, prediction);//F2阶段根据指令dyn_inst，进行预测分支； prediction为预测结果
                 } else {
                     DPRINTF(Fetch, "Inst not ready yet\n");
                 }//end if (decoder->instReady()) 
@@ -464,7 +466,7 @@ Fetch2::evaluate()
                 /* Step on the pointer into the line if there's no
                  *  complete instruction waiting */
                 if (decoder->needMoreBytes()) {
-                    fetch_info.inputIndex += sizeof(TheISA::MachInst);
+                    fetch_info.inputIndex += sizeof(TheISA::MachInst);//+= 4Byte
 
                 DPRINTF(Fetch, "Updated inputIndex value PC: %s"
                     " inputIndex: 0x%x lineBaseAddr: 0x%x lineWidth: 0x%x\n",
@@ -537,7 +539,7 @@ Fetch2::evaluate()
         assert(insts_out.isBubble());
     }
     /** Reserve a slot in the next stage and output data */
-    *predictionOut.inputWire = prediction;//F2 -> F1 阶段
+    *predictionOut.inputWire = prediction;//F2 -> F1 阶段 (分支预测)
 
     /* If we generated output, reserve space for the result in the next stage
      *  and mark the stage as being active this cycle */
@@ -545,7 +547,7 @@ Fetch2::evaluate()
         /* Note activity of following buffer */
         cpu.activityRecorder->activity();
         insts_out.threadId = tid;
-        nextStageReserve[tid].reserve();
+        nextStageReserve[tid].reserve();//@译码阶段的inputbuffer空间扩展
     }
 
     /* If we still have input to process and somewhere to put it,

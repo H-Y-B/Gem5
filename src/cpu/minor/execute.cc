@@ -63,8 +63,8 @@ Execute::Execute(const std::string &name_,
     Latch<ForwardInstData>::Output inp_,
     Latch<BranchData>::Input out_) :
     Named(name_),
-    inp(inp_),
-    out(out_),
+    inp(inp_),//@dToE.output()
+    out(out_),//@eToF1.input()
     cpu(cpu_),
     issueLimit(params.executeIssueLimit),
     memoryIssueLimit(params.executeMemoryIssueLimit),

@@ -59,13 +59,13 @@ Fetch1::Fetch1(const std::string &name_,
     std::vector<InputBuffer<ForwardLineData>> &next_stage_input_buffer) :
     Named(name_),
     cpu(cpu_),
-    inp(inp_),
-    out(out_),
-    prediction(prediction_),
-    nextStageReserve(next_stage_input_buffer),
+    inp(inp_),//@ eToF1.output(), 
+    out(out_),//@ f1ToF2.input(), 
+    prediction(prediction_),//@ f2ToF1.output(), 
+    nextStageReserve(next_stage_input_buffer),//@ fetch2.inputBuffer
     icachePort(name_ + ".icache_port", *this, cpu_),
     lineSnap(params.fetch1LineSnapWidth),
-    maxLineWidth(params.fetch1LineWidth),
+    maxLineWidth(params.fetch1LineWidth),//@py参数
     fetchLimit(params.fetch1FetchLimit),
     fetchInfo(params.numThreads),
     threadPriority(0),
@@ -83,7 +83,7 @@ Fetch1::Fetch1(const std::string &name_,
     }
 
     if (maxLineWidth == 0) {
-        maxLineWidth = cpu.cacheLineSize();
+        maxLineWidth = cpu.cacheLineSize();//@大小以 cacheLine的大小为准
         DPRINTF(Fetch, "maxLineWidth set to cache line size of: %d\n",
             maxLineWidth);
     }
@@ -505,7 +505,7 @@ Fetch1::changeStream(const BranchData &branch)
         thread.state = FetchRunning;
         break;
     }
-    thread.pc = branch.target;
+    thread.pc = branch.target;//@更新PC
 }
 
 void
@@ -542,7 +542,7 @@ Fetch1::processResponse(Fetch1::FetchRequestPtr response,
     line.pc = response->pc;
     /* Set the lineBase, which is a sizeof(MachInst) aligned address <=
      *  pc.instAddr() */
-    line.lineBaseAddr = response->request->getVaddr();
+    line.lineBaseAddr = response->request->getVaddr();//地址 cache line大小对齐
 
     if (response->fault != NoFault) {
         /* Stop fetching if there was a fault */
@@ -553,7 +553,7 @@ Fetch1::processResponse(Fetch1::FetchRequestPtr response,
             response->fault->name());
         thread.state = Fetch1::FetchWaitingForPC;
     } else {
-        line.adoptPacketData(packet);//将cahce line 发送到 line(F2)
+        line.adoptPacketData(packet);//将cahce line 发送到 f1ToF2
         /* Null the response's packet to prevent the response from trying to
          *  deallocate the packet */
         response->packet = NULL;
@@ -563,9 +563,9 @@ Fetch1::processResponse(Fetch1::FetchRequestPtr response,
 void
 Fetch1::evaluate()
 {
-    const BranchData &execute_branch =        *inp.outputWire; //from Exe
-    const BranchData &fetch2_branch  = *prediction.outputWire; //from F2
-    ForwardLineData  &line_out       =        *out.inputWire ; //to F2
+    const BranchData &execute_branch =        *inp.outputWire; //from  eToF1.output().outputWire
+    const BranchData &fetch2_branch  = *prediction.outputWire; //from f2ToF1.output().outputWire
+    ForwardLineData  &line_out       =        *out.inputWire ; //to    f1ToF2.input().inputWire
 
     assert(line_out.isBubble());
 
@@ -634,7 +634,8 @@ Fetch1::evaluate()
                 changeStream(fetch2_branch);
             }
         }
-    }
+    }//@ end if ：F2和EXE阶段对 F1阶段的PC更新完毕
+
                                             //默认 < 1 : 只要requests和transfers队列中存在 请求，就不去 fetchline
     if (numInFlightFetches() < fetchLimit) {//F1中的队列中还有空间
         ThreadID fetch_tid = getScheduledThread();
@@ -680,7 +681,7 @@ Fetch1::evaluate()
             DPRINTF(Fetch, "Processing fetched line: %s\n",
                 response->id);
 
-            processResponse(response, line_out);//send response to line_out(F2)
+            processResponse(response, line_out);//send response to f1ToF2
         }
 
         popAndDiscard(transfers);

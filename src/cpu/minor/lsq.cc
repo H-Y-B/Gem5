@@ -1205,7 +1205,7 @@ LSQ::tryToSend(LSQRequestPtr request)
                 request->setState(LSQRequest::Complete);
             else
                 request->setState(LSQRequest::RequestIssuing);
-        } else if (dcachePort.sendTimingReq(packet)) {
+        } else if (dcachePort.sendTimingReq(packet)) {//向dcache端口发送请求
             DPRINTF(MinorMem, "Sent data memory request\n");
 
             numAccessesInMemorySystem++;
@@ -1285,7 +1285,7 @@ LSQ::canSendToMemorySystem()
         numAccessesInMemorySystem < inMemorySystemLimit;
 }
 
-bool
+bool//从dcache端取出数据
 LSQ::recvTimingResp(PacketPtr response)
 {
     LSQRequestPtr request =

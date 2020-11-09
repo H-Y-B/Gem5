@@ -175,11 +175,15 @@ class MinorDefaultMiscFU(MinorFU):
     opClasses = minorMakeOpClassSet(['IprAccess', 'InstPrefetch'])
     opLat = 1
 
-class MinorDefaultFUPool(MinorFUPool):
-    funcUnits = [MinorDefaultIntFU(), MinorDefaultIntFU(),
-        MinorDefaultIntMulFU(), MinorDefaultIntDivFU(),
-        MinorDefaultFloatSimdFU(), MinorDefaultPredFU(),
-        MinorDefaultMemFU(), MinorDefaultMiscFU()]
+class MinorDefaultFUPool(MinorFUPool):#功能单元
+    funcUnits = [MinorDefaultIntFU(), 
+                 MinorDefaultIntFU(),
+                 MinorDefaultIntMulFU(), 
+                 MinorDefaultIntDivFU(),
+                 MinorDefaultFloatSimdFU(), 
+                 MinorDefaultPredFU(),
+                 MinorDefaultMemFU(), 
+                 MinorDefaultMiscFU()]
 
 class ThreadPolicy(Enum): vals = ['SingleThreaded', 'RoundRobin', 'Random']
 

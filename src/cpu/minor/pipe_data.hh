@@ -178,7 +178,7 @@ class ForwardLineData /* : public ReportIF, public BubbleIF */
   public:
     /** First byte address in the line.  This is allowed to be
      *  <= pc.instAddr() */
-    Addr lineBaseAddr;
+    Addr lineBaseAddr; //cache line的地址
 
     /** PC of the first requested inst within this line */
     TheISA::PCState pc;
