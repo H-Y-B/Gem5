@@ -132,10 +132,12 @@ Decode::evaluate()
 
     assert(insts_out.isBubble());
 
+
+    //@统计 下一阶段 各线程inputbuffer是否还有空间，据此来进行线程调度
     for (ThreadID tid = 0; tid < cpu.numThreads; tid++)
         decodeInfo[tid].blocked = !nextStageReserve[tid].canReserve();//@执行阶段的inputbuffer是否还有空间
-
     ThreadID tid = getScheduledThread();//线程调度
+                                        
 
     if (tid != InvalidThreadID) {
         DecodeThreadInfo &decode_info = decodeInfo[tid];
@@ -143,6 +145,8 @@ Decode::evaluate()
 
         unsigned int output_index = 0;
 
+
+        //@ 这里的while循环，逻辑上就是对 （从inputBuffer中读取出的数据 insts_in 中的每一条指令inst） 进行分析操作
         /* Pack instructions into the output while we can.  This may involve
          * using more than one input line */
         while (insts_in &&
@@ -165,7 +169,7 @@ Decode::evaluate()
                     DPRINTF(Decode, "Fault being passed: %d\n",
                         inst->fault->name());
 
-                    decode_info.inputIndex++;
+                    decode_info.inputIndex++;//@insts_in 中的 下一条 指令
                     decode_info.inMacroop = false;
                 } else if (static_inst->isMacroop()) {
                     /* Generate a new micro-op */
@@ -213,7 +217,7 @@ Decode::evaluate()
 
                     /* Step input if this is the last micro-op */
                     if (static_micro_inst->isLastMicroop()) {
-                        decode_info.inputIndex++;
+                        decode_info.inputIndex++;;//@insts_in 中的 下一条 指令
                         decode_info.inMacroop = false;
                     }
                 } else {
@@ -225,7 +229,7 @@ Decode::evaluate()
                     parent_static_inst = static_inst;
 
                     /* Step input */
-                    decode_info.inputIndex++;
+                    decode_info.inputIndex++;;//@insts_in 中的 下一条 指令
                     decode_info.inMacroop = false;
                 }
 
@@ -247,17 +251,17 @@ Decode::evaluate()
             }//end if (inst->isBubble()) else 
 
             /* Have we finished with the input? */
-            if (decode_info.inputIndex == insts_in->width()) {
+            if (decode_info.inputIndex == insts_in->width()) {//@对 （从inputBuffer中读取出的数据 insts_in 中的每一条指令inst） 分析和操作完毕
                 /* If we have just been producing micro-ops, we *must* have
                  * got to the end of that for inputIndex to be pushed past
                  * insts_in->width() */
                 assert(!decode_info.inMacroop);
-                popInput(tid);
+                popInput(tid);//@这一次while循环 对（从inputBuffer中读取出的数据 insts_in）的分析和操作 完毕，可以pop
                 insts_in = NULL;
 
                 if (processMoreThanOneInput) {
                     DPRINTF(Decode, "Wrapping\n");
-                    insts_in = getInput(tid);
+                    insts_in = getInput(tid);//@读取inputBuffer中的数据，没有pop
                 }
             }
         }//end while
@@ -283,9 +287,9 @@ Decode::evaluate()
      *  mark stage as active */
     for (ThreadID i = 0; i < cpu.numThreads; i++)
     {
-        if (getInput(i) && nextStageReserve[i].canReserve()) {
+        if (getInput(i) && nextStageReserve[i].canReserve()) {//@读取inputBuffer中的数据，没有pop  且   下一阶段的inputBuffer还有空间
             cpu.activityRecorder->activateStage(Pipeline::DecodeStageId);
-            break;
+            break;//@只激活 一个线程
         }
     }
 
