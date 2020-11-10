@@ -117,7 +117,7 @@ class Execute : public Named
     std::vector<Scoreboard> scoreboard;
 
     /** The execution functional units */
-    std::vector<FUPipeline *> funcUnits;
+    std::vector<FUPipeline *> funcUnits;//@功能单元
 
   public: /* Public for Pipeline to be able to pass it to Decode */
     std::vector<InputBuffer<ForwardInstData>> inputBuffer;

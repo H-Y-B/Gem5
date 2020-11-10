@@ -144,12 +144,13 @@ Execute::Execute(const std::string &name_,
         funcUnits.push_back(fu);
     }
 
+    //@遍历各种操作，是否 有 支持该操作的功能单元
     /** Check that there is a functional unit for all operation classes */
-    for (int op_class = No_OpClass + 1; op_class < Num_OpClasses; op_class++) {
+    for (int op_class = No_OpClass + 1; op_class < Num_OpClasses; op_class++) {//@遍历操作
         bool found_fu = false;
         unsigned int fu_index = 0;
 
-        while (fu_index < numFuncUnits && !found_fu)
+        while (fu_index < numFuncUnits && !found_fu)//@遍历功能单元
         {
             if (funcUnits[fu_index]->provides(
                 static_cast<OpClass>(op_class)))
@@ -748,7 +749,7 @@ Execute::issue(ThreadID thread_id)
                         }
 
                         /* Issue to FU */
-                        fu->push(fu_inst);
+                        fu->push(fu_inst);//@ 指令进入功能单元
                         /* And start the countdown on activity to allow
                          *  this instruction to get to the end of its FU */
                         cpu.activityRecorder->activity();
@@ -768,7 +769,7 @@ Execute::issue(ThreadID thread_id)
 
                         issued = true;
                     }
-                }
+                }//end if else
 
                 fu_index++;//尝试下一个功能单元
             } while (fu_index != numFuncUnits && !issued);
@@ -776,7 +777,7 @@ Execute::issue(ThreadID thread_id)
 			//指令没有被发射
             if (!issued)
                 DPRINTF(MinorExecute, "Didn't issue inst: %s\n", *inst);
-        }
+        }//end if else
 
         if (issued) {
             /* Generate MinorTrace's MinorInst lines.  Do this at commit
@@ -814,7 +815,7 @@ Execute::issue(ThreadID thread_id)
         }
 
         /* Got to the end of a line */
-        if (thread.inputIndex == insts_in->width()) {
+        if (thread.inputIndex == insts_in->width()) {//@inputbuffer中读取的insts_in中的所有指令处理完毕
             popInput(thread_id);
             /* Set insts_in to null to force us to leave the surrounding
              *  loop */
