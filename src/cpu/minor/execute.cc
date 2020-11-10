@@ -238,7 +238,7 @@ Execute::tryToBranch(MinorDynInstPtr inst, Fault fault, BranchData &branch)
         force_branch;
 
     /* The reason for the branch data we're about to generate, set below */
-    BranchData::Reason reason = BranchData::NoBranch;
+    BranchData::Reason reason = BranchData::NoBranch;//@原因
 
     if (fault == NoFault)
     {
@@ -258,7 +258,7 @@ Execute::tryToBranch(MinorDynInstPtr inst, Fault fault, BranchData &branch)
                 " none happened inst: %s\n",
                 inst->pc.instAddr(), inst->predictedTarget.instAddr(), *inst);
 
-            reason = BranchData::BadlyPredictedBranch;
+            reason = BranchData::BadlyPredictedBranch;//@原因
         } else if (inst->predictedTarget == target) { //预测正确
             /* Branch prediction got the right target, kill the branch and
              *  carry on.
@@ -268,7 +268,7 @@ Execute::tryToBranch(MinorDynInstPtr inst, Fault fault, BranchData &branch)
                 " inst: %s\n",
                 inst->pc.instAddr(), inst->predictedTarget.instAddr(), *inst);
 
-            reason = BranchData::CorrectlyPredictedBranch;
+            reason = BranchData::CorrectlyPredictedBranch;//@原因：分支预测成功
         } else {//预测失败
             /* Branch prediction got the wrong target */
             DPRINTF(Branch, "Predicted a branch from 0x%x to 0x%x"
@@ -276,27 +276,32 @@ Execute::tryToBranch(MinorDynInstPtr inst, Fault fault, BranchData &branch)
                     inst->pc.instAddr(), inst->predictedTarget.instAddr(),
                     target.instAddr(), *inst);
 
-            reason = BranchData::BadlyPredictedBranchTarget;
+            reason = BranchData::BadlyPredictedBranchTarget;//@原因：预测了跳转，但是预测目标 错误
         }
     } else if (must_branch) {
         /* Unpredicted branch */
         DPRINTF(Branch, "Unpredicted branch from 0x%x to 0x%x inst: %s\n",
             inst->pc.instAddr(), target.instAddr(), *inst);
 
-        reason = BranchData::UnpredictedBranch;
+        reason = BranchData::UnpredictedBranch;//@原因
     } else {
         /* No branch at all */
-        reason = BranchData::NoBranch;
+        reason = BranchData::NoBranch;//@原因
     }
 
-    updateBranchData(inst->id.threadId, reason, inst, target, branch);
+    updateBranchData(inst->id.threadId, 
+                     reason, 
+                     inst, 
+                     target, 
+                     branch);
 }
 
 void
 Execute::updateBranchData(
     ThreadID tid,
     BranchData::Reason reason,
-    MinorDynInstPtr inst, const TheISA::PCState &target,
+    MinorDynInstPtr inst, 
+    const TheISA::PCState &target,
     BranchData &branch)
 {
     if (reason != BranchData::NoBranch) {
@@ -306,13 +311,14 @@ Execute::updateBranchData(
 
         /* Branches (even mis-predictions) don't change the predictionSeqNum,
          *  just the streamSeqNum */
-        branch = BranchData(reason, tid,
-            executeInfo[tid].streamSeqNum,
-            /* Maintaining predictionSeqNum if there's no inst is just a
-             * courtesy and looks better on minorview */
-            (inst->isBubble() ? executeInfo[tid].lastPredictionSeqNum
-                : inst->id.predictionSeqNum),
-            target, inst);
+        branch = BranchData(reason, 
+                            tid,
+                            executeInfo[tid].streamSeqNum,
+                            /* Maintaining predictionSeqNum if there's no inst is just a
+                            * courtesy and looks better on minorview */
+                            (inst->isBubble() ? executeInfo[tid].lastPredictionSeqNum : inst->id.predictionSeqNum),
+                            target, 
+                            inst);
 
         DPRINTF(Branch, "Branch data signalled: %s\n", branch);
     }
@@ -437,9 +443,11 @@ Execute::takeInterrupt(ThreadID thread_id, BranchData &branch)
 
         /* Assume that an interrupt *must* cause a branch.  Assert this? */
 
-        updateBranchData(thread_id, BranchData::Interrupt,
-            MinorDynInst::bubble(), cpu.getContext(thread_id)->pcState(),
-            branch);
+        updateBranchData(thread_id, 
+                         BranchData::Interrupt,
+                         MinorDynInst::bubble(), 
+                         cpu.getContext(thread_id)->pcState(),//@target pc
+                         branch);
     }
 
     return interrupt != NoFault;
@@ -1015,8 +1023,11 @@ Execute::commitInst(MinorDynInstPtr inst, bool early_memory_issue,
 
             cpu.stats.numFetchSuspends++;
 
-            updateBranchData(thread_id, BranchData::SuspendThread, inst,
-                resume_pc, branch);
+            updateBranchData(thread_id, 
+                             BranchData::SuspendThread, 
+                             inst,
+                             resume_pc, //@target pc
+                             branch);
         }
     }
 
@@ -1123,8 +1134,11 @@ Execute::commit(ThreadID thread_id, bool only_commit_microops, bool discard,
             ThreadContext *thread = cpu.getContext(thread_id);
 
             /* Branch as there was a change in PC */
-            updateBranchData(thread_id, BranchData::UnpredictedBranch,
-                MinorDynInst::bubble(), thread->pcState(), branch);
+            updateBranchData(thread_id, 
+                             BranchData::UnpredictedBranch,
+                             MinorDynInst::bubble(), 
+                             thread->pcState(),//@target pc 
+                             branch);
         } else if (mem_response &&
             num_mem_refs_committed < memoryCommitLimit)
         {
@@ -1422,7 +1436,7 @@ Execute::evaluate()
     if (!inp.outputWire->isBubble())
         inputBuffer[inp.outputWire->threadId].setTail(*inp.outputWire);
 
-    BranchData &branch = *out.inputWire;
+    BranchData &branch = *out.inputWire;//@eToF1.input()
 
     unsigned int num_issued = 0;
 
@@ -1482,8 +1496,11 @@ Execute::evaluate()
             /* Halt fetch, but don't do it until we have the current instruction in
              *  the bag */
             if (commit_info.drainState == DrainHaltFetch) {
-                updateBranchData(commit_tid, BranchData::HaltFetch,
-                        MinorDynInst::bubble(), TheISA::PCState(0), branch);
+                updateBranchData(commit_tid, 
+                                 BranchData::HaltFetch,
+                                 MinorDynInst::bubble(), 
+                                 TheISA::PCState(0),//@target pc 
+                                 branch);
 
                 cpu.wakeupOnEvent(Pipeline::ExecuteStageId);
                 setDrainState(commit_tid, DrainAllInsts);
