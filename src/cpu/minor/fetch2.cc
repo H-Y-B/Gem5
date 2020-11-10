@@ -82,7 +82,7 @@ Fetch2::Fetch2(const std::string &name,
     /* Per-thread input buffers */
     for (ThreadID tid = 0; tid < params.numThreads; tid++) {
         inputBuffer.push_back(
-            InputBuffer<ForwardLineData>(
+            InputBuffer<ForwardLineData>(//@InputBuffer构造方法
                 name + ".inputBuffer" + std::to_string(tid), "lines",
                 params.fetch2InputBufferSize));
     }
@@ -515,7 +515,7 @@ Fetch2::evaluate()
                 /* Just discard one line, one's behind it may have new
                  *  stream sequence numbers.  There's a DPRINTF above
                  *  for this event */
-                popInput(tid);
+                popInput(tid);//@丢弃 inputbuffer中的一项line
                 fetch_info.havePC = false;
                 line_in = NULL;
             } else if (fetch_info.inputIndex == line_in->lineWidth) {

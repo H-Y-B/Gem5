@@ -172,7 +172,7 @@ Execute::Execute(const std::string &name_,
 
         /* Input Buffers */  //每个线程一个inputBuffer
         inputBuffer.push_back(
-            InputBuffer<ForwardInstData>(
+            InputBuffer<ForwardInstData>(//@InputBuffer构造方法
                 name_ + ".inputBuffer" + tid_str, "insts",
                 params.executeInputBufferSize));
 

@@ -71,14 +71,15 @@ Decode::Decode(const std::string &name,
     /* Per-thread input buffers */
     for (ThreadID tid = 0; tid < params.numThreads; tid++) {
         inputBuffer.push_back(
-            InputBuffer<ForwardInstData>(
-                name + ".inputBuffer" + std::to_string(tid), "insts",
+            InputBuffer<ForwardInstData>(  //@InputBuffer构造方法
+                name + ".inputBuffer" + std::to_string(tid), 
+                "insts",
                 params.decodeInputBufferSize));
     }
 }
 
 const ForwardInstData *
-Decode::getInput(ThreadID tid)
+Decode::getInput(ThreadID tid)//@访问 inputBuffer中的 第一项，没有pop
 {
     /* Get insts from the inputBuffer to work with */
     if (!inputBuffer[tid].empty()) {
@@ -125,7 +126,7 @@ Decode::evaluate()
 {
     /* Push input onto appropriate input buffer */
     if (!inp.outputWire->isBubble())
-        inputBuffer[inp.outputWire->threadId].setTail(*inp.outputWire);
+        inputBuffer[inp.outputWire->threadId].setTail(*inp.outputWire);//@将f2ToD.output()放入 inputBuffer 中
 
     ForwardInstData &insts_out = *out.inputWire;//D -> E 阶段
 
@@ -138,7 +139,7 @@ Decode::evaluate()
 
     if (tid != InvalidThreadID) {
         DecodeThreadInfo &decode_info = decodeInfo[tid];
-        const ForwardInstData *insts_in = getInput(tid);//拿出 F2阶段放入  D阶段的inputbuffer 中的数据
+        const ForwardInstData *insts_in = getInput(tid);//@读取inputBuffer中的数据，没有pop
 
         unsigned int output_index = 0;
 
@@ -314,7 +315,7 @@ Decode::getScheduledThread()
     }
 
     for (auto tid : priority_list) {
-        if (getInput(tid) && !decodeInfo[tid].blocked) {
+        if (getInput(tid) && !decodeInfo[tid].blocked) {//@读取inputBuffer中的数据，没有pop
             threadPriority = tid;
             return tid;
         }

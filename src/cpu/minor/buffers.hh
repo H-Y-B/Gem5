@@ -552,13 +552,16 @@ class Queue : public Named, public Reservable
  *  which, when the queue is empty, just takes a reference to the pushed
  *  item as the single element.  Calling pushTail will push that element
  *  onto the queue.
- *
+ * 
  *  The purpose of this class is to allow the faster operation of queues of
  *  items which usually don't get deeper than one item and for which the copy
  *  associated with a push is expensive enough to want to avoid
  *
  *  The intended use case is the input buffer for pipeline stages, hence the
- *  class name */
+ *  class name 
+ *  @有 queue 和  elementPtr两个容器
+ *  @优先push到elementPtr中，queue的操作十分耗时，所以尽量避免对 queue 进行操作
+ * */
 template <typename ElemType,
     typename ReportTraits = ReportTraitsAdaptor<ElemType>,
     typename BubbleTraits = BubbleTraitsAdaptor<ElemType> >
