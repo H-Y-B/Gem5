@@ -50,7 +50,7 @@ class StaticInstFlags(Enum):
     wrapper_is_struct = True
     enum_name = 'Flags'
 
-    vals = [
+    vals = [            #@静态指令的标志
         'IsNop',            # Is a no-op (no effect at all).
 
         'IsInteger',        # References integer regs.
