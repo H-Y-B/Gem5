@@ -82,8 +82,11 @@ vector<BaseCPU *> BaseCPU::cpuList;
 int maxThreadsPerCPU = 1;
 
 CPUProgressEvent::CPUProgressEvent(BaseCPU *_cpu, Tick ival)
-    : Event(Event::Progress_Event_Pri), _interval(ival), lastNumInst(0),
-      cpu(_cpu), _repeatEvent(true)
+    : Event(Event::Progress_Event_Pri), 
+	  _interval(ival), 
+	  lastNumInst(0),
+      cpu(_cpu), 
+	  _repeatEvent(true)
 {
     if (_interval)
         cpu->schedule(this, curTick() + _interval);//事件驱动
@@ -102,8 +105,9 @@ CPUProgressEvent::process()
     }
 
 #ifndef NDEBUG
-    double ipc = double(temp - lastNumInst) / (_interval / cpu->clockPeriod());
-
+    //计算 _interval / cpu->clockPeriod() 时间段的IPC
+	double ipc = double(temp - lastNumInst) / (_interval / cpu->clockPeriod());
+    
     DPRINTFN("%s progress event, total committed:%i, progress insts committed: "
              "%lli, IPC: %0.8d\n", cpu->name(), temp, temp - lastNumInst,
              ipc);
@@ -123,21 +127,31 @@ CPUProgressEvent::description() const
 }
 
 BaseCPU::BaseCPU(Params *p, bool is_checker)
-    : ClockedObject(p), instCnt(0), _cpuId(p->cpu_id), _socketId(p->socket_id),
-      _instMasterId(p->system->getMasterId(this, "inst")),
-      _dataMasterId(p->system->getMasterId(this, "data")),
-      _taskId(ContextSwitchTaskId::Unknown), _pid(invldPid),
-      _switchedOut(p->switched_out), _cacheLineSize(p->system->cacheLineSize()),
-      interrupts(p->interrupts), profileEvent(NULL),
-      numThreads(p->numThreads), system(p->system),
-      previousCycle(0), previousState(CPU_STATE_SLEEP),
-      functionTraceStream(nullptr), currentFunctionStart(0),
-      currentFunctionEnd(0), functionEntryTick(0),
-      addressMonitor(p->numThreads),
-      syscallRetryLatency(p->syscallRetryLatency),
-      pwrGatingLatency(p->pwr_gating_latency),
-      powerGatingOnIdle(p->power_gating_on_idle),
-      enterPwrGatingEvent([this]{ enterPwrGating(); }, name())
+    : ClockedObject(p), 
+	  instCnt(0), 
+		_cpuId(p->cpu_id), 
+		_socketId(p->socket_id),
+      	_instMasterId(p->system->getMasterId(this, "inst")),
+      	_dataMasterId(p->system->getMasterId(this, "data")),
+      	_taskId(ContextSwitchTaskId::Unknown), 
+		_pid(invldPid),
+      	_switchedOut(p->switched_out), 
+		_cacheLineSize(p->system->cacheLineSize()),
+      	interrupts(p->interrupts), 
+		profileEvent(NULL),
+      	numThreads(p->numThreads), 
+		system(p->system),
+      	previousCycle(0), 
+		previousState(CPU_STATE_SLEEP),
+      	functionTraceStream(nullptr), 
+		currentFunctionStart(0),
+      	currentFunctionEnd(0), 
+		functionEntryTick(0),
+      	addressMonitor(p->numThreads),
+      	syscallRetryLatency(p->syscallRetryLatency),
+      	pwrGatingLatency(p->pwr_gating_latency),
+      	powerGatingOnIdle(p->power_gating_on_idle),
+      	enterPwrGatingEvent([this]{ enterPwrGating(); }, name())
 {
     // if Python did not provide a valid ID, do it here
     if (_cpuId == -1 ) {
@@ -165,8 +179,13 @@ BaseCPU::BaseCPU(Params *p, bool is_checker)
             functionTracingEnabled = true;
         } else {
             Event *event = new EventFunctionWrapper(
-                [this]{ enableFunctionTrace(); }, name(), true);
+                                                   [this]{ enableFunctionTrace(); }, //anonymousi(匿名的) function to execute
+												   name(), //local variables to "capture"
+												   true    //delete this object after executing event
+												   );
+			//创建事件event，并绑定事件触发时执行的函数 enableFunctionTrace()
             schedule(event, p->function_trace_start);//事件驱动
+			//把创建的事件对象放入 事件队列中，并指定在 tick 时，触发该事件
         }
     }
 

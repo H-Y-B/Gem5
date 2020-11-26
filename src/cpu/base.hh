@@ -81,6 +81,8 @@ struct AddressMonitor
     bool gotWakeup;
 };
 
+
+//CPU执行事件
 class CPUProgressEvent : public Event
 {
   protected:
@@ -260,7 +262,7 @@ class BaseCPU : public ClockedObject
     EventFunctionWrapper * profileEvent;
 
   protected:
-    std::vector<ThreadContext *> threadContexts;
+    std::vector<ThreadContext *> threadContexts;//每个线程的上下文
 
     Trace::InstTracer * tracer;
 
@@ -306,7 +308,7 @@ class BaseCPU : public ClockedObject
     typedef BaseCPUParams Params;
     const Params *params() const
     { return reinterpret_cast<const Params *>(_params); }
-    BaseCPU(Params *params, bool is_checker = false);
+    BaseCPU(Params *params, bool is_checker = false);//构造函数
     virtual ~BaseCPU();
 
     void init() override;
@@ -457,7 +459,7 @@ class BaseCPU : public ClockedObject
   public:
     /**
      * @{
-     * @name PMU Probe points.
+     * @name PMU Probe points.  电源管理单元 （Power Management Unit,PMU）
      */
 
     /**
@@ -572,7 +574,7 @@ class BaseCPU : public ClockedObject
     }
 
     static int numSimulatedCPUs() { return cpuList.size(); }
-    static Counter numSimulatedInsts()
+    static Counter numSimulatedInsts()//模拟的指令个数（所有核）
     {
         Counter total = 0;
 
@@ -583,7 +585,7 @@ class BaseCPU : public ClockedObject
         return total;
     }
 
-    static Counter numSimulatedOps()
+    static Counter numSimulatedOps()//模拟的操作个数（所有核）
     {
         Counter total = 0;
 
