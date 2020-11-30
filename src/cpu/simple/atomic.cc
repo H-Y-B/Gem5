@@ -75,14 +75,15 @@ AtomicSimpleCPU::init()
 
 AtomicSimpleCPU::AtomicSimpleCPU(AtomicSimpleCPUParams *p)
     : BaseSimpleCPU(p),
-      tickEvent([this]{ tick(); }, "AtomicSimpleCPU tick",
-                false, Event::CPU_Tick_Pri),
-      width(p->width), locked(false),
+      tickEvent([this]{ tick(); }, "AtomicSimpleCPU tick", false, Event::CPU_Tick_Pri),
+      width(p->width), 
+      locked(false),
       simulate_data_stalls(p->simulate_data_stalls),
       simulate_inst_stalls(p->simulate_inst_stalls),
       icachePort(name() + ".icache_port", this),
       dcachePort(name() + ".dcache_port", this),
-      dcache_access(false), dcache_latency(0),
+      dcache_access(false), 
+      dcache_latency(0),
       ppCommit(nullptr)
 {
     _status = Idle;
@@ -408,7 +409,7 @@ AtomicSimpleCPU::readMem(Addr addr, uint8_t * data, unsigned size,
             if (req->isLocalAccess()) {
                 dcache_latency += req->localAccessor(thread->getTC(), &pkt);
             } else {
-                dcache_latency += sendPacket(dcachePort, &pkt);
+                dcache_latency += sendPacket(dcachePort, &pkt);//@发送访存请求
             }
             dcache_access = true;
 
@@ -514,7 +515,7 @@ AtomicSimpleCPU::writeMem(uint8_t *data, unsigned size, Addr addr,
                     dcache_latency +=
                         req->localAccessor(thread->getTC(), &pkt);
                 } else {
-                    dcache_latency += sendPacket(dcachePort, &pkt);
+                    dcache_latency += sendPacket(dcachePort, &pkt);//@发送访存 写请求
 
                     // Notify other threads on this CPU of write
                     threadSnoop(&pkt, curThread);
@@ -596,8 +597,9 @@ AtomicSimpleCPU::amoMem(Addr addr, uint8_t* data, unsigned size,
                  thread->pcState().instAddr(), std::move(amo_op));
 
     // translate to physical address
-    Fault fault = thread->dtb->translateAtomic(req, thread->getTC(),
-                                                      BaseTLB::Write);
+    Fault fault = thread->dtb->translateAtomic(req, 
+                                               thread->getTC(),
+                                               BaseTLB::Write);
 
     // Now do the access.
     if (fault == NoFault && !req->getFlags().isSet(Request::NO_ACCESS)) {
@@ -609,7 +611,7 @@ AtomicSimpleCPU::amoMem(Addr addr, uint8_t* data, unsigned size,
         if (req->isLocalAccess())
             dcache_latency += req->localAccessor(thread->getTC(), &pkt);
         else {
-            dcache_latency += sendPacket(dcachePort, &pkt);
+            dcache_latency += sendPacket(dcachePort, &pkt);//@发送访存请求
         }
 
         dcache_access = true;
@@ -649,7 +651,7 @@ AtomicSimpleCPU::tick()
 
     Tick latency = 0;
 
-    for (int i = 0; i < width || locked; ++i) {
+    for (int i = 0; i < width || locked; ++i) {//@每周期处理windth条指令
         numCycles++;
         updateCycleCounters(BaseCPU::CPU_STATE_ON);
 
@@ -673,7 +675,8 @@ AtomicSimpleCPU::tick()
         if (needToFetch) {
             ifetch_req->taskId(taskId());
             setupFetchRequest(ifetch_req);
-            fault = thread->itb->translateAtomic(ifetch_req, thread->getTC(),
+            fault = thread->itb->translateAtomic(ifetch_req,       //@虚实地址转化
+                                                 thread->getTC(),  
                                                  BaseTLB::Execute);
         }
 
@@ -691,10 +694,10 @@ AtomicSimpleCPU::tick()
                 //if (decoder.needMoreBytes())
                 //{
                     icache_access = true;
-                    Packet ifetch_pkt = Packet(ifetch_req, MemCmd::ReadReq);
+                    Packet ifetch_pkt = Packet(ifetch_req, MemCmd::ReadReq);//@创建 取指请求packet
                     ifetch_pkt.dataStatic(&inst);
 
-                    icache_latency = sendPacket(icachePort, &ifetch_pkt);
+                    icache_latency = sendPacket(icachePort, &ifetch_pkt);//@发送取值请求
 
                     assert(!ifetch_pkt.isError());
 
@@ -703,11 +706,11 @@ AtomicSimpleCPU::tick()
                 //}
             }
 
-            preExecute();
+            preExecute();//@调用decode解码
 
             Tick stall_ticks = 0;
             if (curStaticInst) {
-                fault = curStaticInst->execute(&t_info, traceData);
+                fault = curStaticInst->execute(&t_info, traceData);//@执行指令，写回结果
 
                 // keep an instruction count
                 if (fault == NoFault) {
@@ -727,7 +730,7 @@ AtomicSimpleCPU::tick()
                     stall_ticks += clockEdge(syscallRetryLatency) - curTick();
                 }
 
-                postExecute();
+                postExecute();//@后续处理，统计
             }
 
             // @todo remove me after debugging with legion done
@@ -751,8 +754,8 @@ AtomicSimpleCPU::tick()
 
         }
         if (fault != NoFault || !t_info.stayAtPC)
-            advancePC(fault);
-    }
+            advancePC(fault);//@下一个PC
+    }//end for 
 
     if (tryCompleteDrain())
         return;
@@ -762,7 +765,7 @@ AtomicSimpleCPU::tick()
         latency = clockPeriod();
 
     if (_status != Idle)
-        reschedule(tickEvent, curTick() + latency, true);
+        reschedule(tickEvent, curTick() + latency, true);//@触发下一个周期的tickEent
 }
 
 void
