@@ -58,7 +58,7 @@ class AtomicSimpleCPU : public BaseSimpleCPU
 
   protected:
 
-    EventFunctionWrapper tickEvent;
+    EventFunctionWrapper tickEvent;//事件
 
     const int width;
     bool locked;

@@ -75,14 +75,18 @@ AtomicSimpleCPU::init()
 
 AtomicSimpleCPU::AtomicSimpleCPU(AtomicSimpleCPUParams *p)
     : BaseSimpleCPU(p),
-      tickEvent([this]{ tick(); }, "AtomicSimpleCPU tick",
-                false, Event::CPU_Tick_Pri),
-      width(p->width), locked(false),
+      tickEvent(  [this]{ tick(); }, 
+				  "AtomicSimpleCPU tick",
+                  false, 
+				  Event::CPU_Tick_Pri),
+      width(p->width),//CPU 宽度； 怎么宽度？ 
+	  locked(false),
       simulate_data_stalls(p->simulate_data_stalls),
       simulate_inst_stalls(p->simulate_inst_stalls),
       icachePort(name() + ".icache_port", this),
       dcachePort(name() + ".dcache_port", this),
-      dcache_access(false), dcache_latency(0),
+      dcache_access(false), 
+	  dcache_latency(0),
       ppCommit(nullptr)
 {
     _status = Idle;
@@ -627,7 +631,7 @@ AtomicSimpleCPU::amoMem(Addr addr, uint8_t* data, unsigned size,
 }
 
 void
-AtomicSimpleCPU::tick()
+AtomicSimpleCPU::tick()//事件绑定的执行函数
 {
     DPRINTF(SimpleCPU, "Tick\n");
 
@@ -752,7 +756,7 @@ AtomicSimpleCPU::tick()
         }
         if (fault != NoFault || !t_info.stayAtPC)
             advancePC(fault);
-    }
+    }//end for width
 
     if (tryCompleteDrain())
         return;

@@ -86,10 +86,10 @@ CPUProgressEvent::CPUProgressEvent(BaseCPU *_cpu, Tick ival)
 	  _interval(ival), 
 	  lastNumInst(0),
       cpu(_cpu), 
-	  _repeatEvent(true)
+	  _repeatEvent(true)//是否持续触发事件
 {
     if (_interval)
-        cpu->schedule(this, curTick() + _interval);//事件驱动
+        cpu->schedule(this, curTick() + _interval);//事件驱动，插入事件队列，等待一段事件触发
 }
 
 void
