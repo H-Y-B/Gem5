@@ -470,7 +470,7 @@ BaseSimpleCPU::setupFetchRequest(const RequestPtr &req)
 
 
 void
-BaseSimpleCPU::preExecute()
+BaseSimpleCPU::preExecute()//@调用decode解码
 {
     SimpleExecContext &t_info = *threadInfo[curThread];
     SimpleThread* thread = t_info.thread;
@@ -500,7 +500,7 @@ BaseSimpleCPU::preExecute()
 
         //Predecode, ie bundle up an ExtMachInst
         //If more fetch data is needed, pass it in.
-        Addr fetchPC = (pcState.instAddr() & PCMask) + t_info.fetchOffset;
+        Addr fetchPC = (pcState.instAddr() & PCMask) + t_info.fetchOffset;//@取值PC
         //if (decoder->needMoreBytes())
             decoder->moreBytes(pcState, fetchPC, inst);
         //else
@@ -508,7 +508,7 @@ BaseSimpleCPU::preExecute()
 
         //Decode an instruction if one is ready. Otherwise, we'll have to
         //fetch beyond the MachInst at the current pc.
-        instPtr = decoder->decode(pcState);
+        instPtr = decoder->decode(pcState);//@译码
         if (instPtr) {
             t_info.stayAtPC = false;
             thread->pcState(pcState);
@@ -542,6 +542,7 @@ BaseSimpleCPU::preExecute()
 #endif // TRACING_ON
     }
 
+    //@分支预测
     if (branchPred && curStaticInst &&
         curStaticInst->isControl()) {
         // Use a fake sequence number since we only have one
