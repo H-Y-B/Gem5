@@ -58,7 +58,7 @@ enum FloatException : uint64_t {
  * For more details on exception causes, see Chapter 3.1.20 of the RISC-V
  * privileged specification v 1.10. Codes are enumerated in Table 3.6.
  */
-enum ExceptionCode : uint64_t {
+enum ExceptionCode : uint64_t {//@ riscv 异常ID号
     INST_ADDR_MISALIGNED = 0,
     INST_ACCESS = 1,
     INST_ILLEGAL = 2,
@@ -89,7 +89,7 @@ enum ExceptionCode : uint64_t {
     NumInterruptTypes
 };
 
-class RiscvFault : public FaultBase
+class RiscvFault : public FaultBase  //@riscv 的 FaultBase  实现
 {
   protected:
     const FaultName _name;
@@ -122,14 +122,14 @@ class Reset : public FaultBase
         StaticInst::nullStaticInstPtr) override;
 };
 
-class InterruptFault : public RiscvFault
+class InterruptFault : public RiscvFault //@ 中断
 {
   public:
     InterruptFault(ExceptionCode c) : RiscvFault("interrupt", true, c) {}
     InterruptFault(int c) : InterruptFault(static_cast<ExceptionCode>(c)) {}
 };
 
-class InstFault : public RiscvFault
+class InstFault : public RiscvFault  //@指令错误
 {
   protected:
     const ExtMachInst _inst;
@@ -179,7 +179,7 @@ class UnimplementedFault : public InstFault
     void invokeSE(ThreadContext *tc, const StaticInstPtr &inst) override;
 };
 
-class IllegalFrmFault: public InstFault
+class IllegalFrmFault: public InstFault//@指令错误 中的  浮点舍入模式 错误
 {
   private:
     const uint8_t frm;
@@ -193,7 +193,7 @@ class IllegalFrmFault: public InstFault
     void invokeSE(ThreadContext *tc, const StaticInstPtr &inst) override;
 };
 
-class AddressFault : public RiscvFault
+class AddressFault : public RiscvFault  //@地址错误
 {
   private:
     const Addr _addr;
@@ -206,7 +206,7 @@ class AddressFault : public RiscvFault
     RegVal trap_value() const override { return _addr; }
 };
 
-class BreakpointFault : public RiscvFault
+class BreakpointFault : public RiscvFault //@断点
 {
   private:
     const PCState pcState;
@@ -220,7 +220,7 @@ class BreakpointFault : public RiscvFault
     void invokeSE(ThreadContext *tc, const StaticInstPtr &inst) override;
 };
 
-class SyscallFault : public RiscvFault
+class SyscallFault : public RiscvFault  //@系统调用
 {
   public:
     SyscallFault(PrivilegeMode prv)
