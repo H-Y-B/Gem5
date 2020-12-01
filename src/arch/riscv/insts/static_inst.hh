@@ -43,7 +43,7 @@ namespace RiscvISA
 /**
  * Base class for all RISC-V static instructions.
  */
-class RiscvStaticInst : public StaticInst
+class RiscvStaticInst : public StaticInst //@ riscv 静态指令实现
 {
   protected:
     using StaticInst::StaticInst;
@@ -59,7 +59,7 @@ class RiscvStaticInst : public StaticInst
 };
 
 /**
- * Base class for all RISC-V Macroops
+ * Base class for all RISC-V Macroops  //@ riscv 宏指令实现
  */
 class RiscvMacroInst : public RiscvStaticInst
 {
