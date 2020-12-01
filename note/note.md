@@ -33,6 +33,10 @@
 >
 > from :https://www.cnbeta.com/articles/tech/100474.htm  or https://pc.watch.impress.co.jp/docs/column/kaigai/336298.html
 
+### microcodeRom
+
+	CISC有些指令过于复杂，如有一条指令就实现图像处理的，这样的指令直接用硬件实现比较困难，于是引出了微代码的概念。CISC中绝大部分指令是通过微代码控制硬件逻辑电路实现的。CISC中通过微代码间接实现的指令称为宏指令，相应微代码一般固化在ROM中。当然为了修正，优化等目的后来发布的在运行时调入内存（RAM）中的形式存在，如微软就曾经在ｗｉｎ７平台上为提高Intel处理器稳定性而写了一些宏指令，发布出来供大众下载。
+
 ### ref link：
 
 [Cache访存并发度解析建模](http://www.doc88.com/p-2746116203962.html)
