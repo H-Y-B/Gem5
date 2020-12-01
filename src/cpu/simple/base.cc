@@ -473,7 +473,7 @@ void
 BaseSimpleCPU::preExecute()//@调用decode解码
 {
     SimpleExecContext &t_info = *threadInfo[curThread];
-    SimpleThread* thread = t_info.thread;
+    SimpleThread* thread = t_info.thread;//@提取当前的线程信息
 
     // maintain $r0 semantics
     thread->setIntReg(ZeroReg, 0);
@@ -492,7 +492,7 @@ BaseSimpleCPU::preExecute()//@调用decode解码
         t_info.stayAtPC = false;
         curStaticInst = microcodeRom.fetchMicroop(pcState.microPC(),
                                                   curMacroStaticInst);
-    } else if (!curMacroStaticInst) {
+    } else if (!curMacroStaticInst) {//@还没有遇到 宏指令
         //We're not in the middle of a macro instruction
         StaticInstPtr instPtr = NULL;
 
@@ -519,14 +519,14 @@ BaseSimpleCPU::preExecute()//@调用decode解码
 
         //If we decoded an instruction and it's microcoded, start pulling
         //out micro ops
-        if (instPtr && instPtr->isMacroop()) {
+        if (instPtr && instPtr->isMacroop()) {//@这是一条 宏指令的开始
             curMacroStaticInst = instPtr;
             curStaticInst =
                 curMacroStaticInst->fetchMicroop(pcState.microPC());
         } else {
             curStaticInst = instPtr;
         }
-    } else {
+    } else {//@ 宏指令的剩余部分
         //Read the next micro op from the macro op
         curStaticInst = curMacroStaticInst->fetchMicroop(pcState.microPC());
     }
@@ -651,26 +651,28 @@ void
 BaseSimpleCPU::advancePC(const Fault &fault)
 {
     SimpleExecContext &t_info = *threadInfo[curThread];
-    SimpleThread* thread = t_info.thread;
+    SimpleThread* thread = t_info.thread;//@提取当前的线程信息
 
     const bool branching(thread->pcState().branching());
 
     //Since we're moving to a new pc, zero out the offset
     t_info.fetchOffset = 0;
-    if (fault != NoFault) {
+    if (fault != NoFault) { //@指令执行时发生fault
         curMacroStaticInst = StaticInst::nullStaticInstPtr;
         fault->invoke(threadContexts[curThread], curStaticInst);
         thread->decoder.reset();
-    } else {
+    } else {                //@没有发生fault
         if (curStaticInst) {
             if (curStaticInst->isLastMicroop())
                 curMacroStaticInst = StaticInst::nullStaticInstPtr;
             TheISA::PCState pcState = thread->pcState();
-            TheISA::advancePC(pcState, curStaticInst);
+            TheISA::advancePC(pcState, curStaticInst);  //@pc更新
             thread->pcState(pcState);
         }
     }
 
+
+    //@分支预测结果判断
     if (branchPred && curStaticInst && curStaticInst->isControl()) {
         // Use a fake sequence number since we only have one
         // instruction in flight at the same time.

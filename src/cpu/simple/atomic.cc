@@ -709,7 +709,7 @@ AtomicSimpleCPU::tick()//事件绑定的执行函数
                 //}
             }
 
-            preExecute();//@调用decode解码
+            preExecute();//@调用decode解码，将 翻译出来的Microop 赋给 curStaticInst
 
             Tick stall_ticks = 0;
             if (curStaticInst) {

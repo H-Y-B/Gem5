@@ -135,6 +135,8 @@ class BaseSimpleCPU : public BaseCPU
 
     void startup() override;
 
+
+    //@ BaseSimpleCPU的访存  虚方法
     virtual Fault readMem(Addr addr, uint8_t* data, unsigned size,
                           Request::Flags flags,
                           const std::vector<bool>& byte_enable =
@@ -162,6 +164,9 @@ class BaseSimpleCPU : public BaseCPU
                                  Request::Flags flags,
                                  AtomicOpFunctorPtr amo_op)
     { panic("initiateMemAMO() is not implemented\n"); }
+
+
+
 
     void countInst();
     Counter totalInsts() const override;
