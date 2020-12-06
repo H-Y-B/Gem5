@@ -119,6 +119,7 @@ DefaultFetch<Impl>::DefaultFetch(O3CPU *_cpu, DerivO3CPUParams *params)
     // Get the size of an instruction.
     instSize = sizeof(TheISA::MachInst);
 
+    //@对于每一个smt线程初始化fetch阶段用到的数据结构
     for (int i = 0; i < Impl::MaxThreads; i++) {
         fetchStatus[i] = Idle;
         decoder[i] = nullptr;
@@ -138,17 +139,18 @@ DefaultFetch<Impl>::DefaultFetch(O3CPU *_cpu, DerivO3CPUParams *params)
     branchPred = params->branchPred;
 
     for (ThreadID tid = 0; tid < numThreads; tid++) {
+        //@创建Decode类型的对象，为每一个硬件线程的decoder赋值  
         decoder[tid] = new TheISA::Decoder(
                 dynamic_cast<TheISA::ISA *>(params->isa[tid]));
         // Create space to buffer the cache line data,
         // which may not hold the entire cache line.
-        fetchBuffer[tid] = new uint8_t[fetchBufferSize];
+        fetchBuffer[tid] = new uint8_t[fetchBufferSize]; //@创建fetchBuffer用于缓存取回来的cache块
     }
 }
 
 template <class Impl>
 std::string
-DefaultFetch<Impl>::name() const
+DefaultFetch<Impl>::name() const//@数据统计
 {
     return cpu->name() + ".fetch";
 }
@@ -165,7 +167,7 @@ DefaultFetch<Impl>::regProbePoints()
 
 template <class Impl>
 void
-DefaultFetch<Impl>::regStats()
+DefaultFetch<Impl>::regStats()//@数据统计
 {
     icacheStallCycles
         .name(name() + ".icacheStallCycles")
@@ -288,7 +290,7 @@ DefaultFetch<Impl>::regStats()
 
 template<class Impl>
 void
-DefaultFetch<Impl>::setTimeBuffer(TimeBuffer<TimeStruct> *time_buffer)
+DefaultFetch<Impl>::setTimeBuffer(TimeBuffer<TimeStruct> *time_buffer)//@设置timebuffer，用于接收从其他流水级发送来的信号 
 {
     timeBuffer = time_buffer;
 
@@ -316,14 +318,14 @@ DefaultFetch<Impl>::setFetchQueue(TimeBuffer<FetchStruct> *ftb_ptr)
 
 template<class Impl>
 void
-DefaultFetch<Impl>::startupStage()
+DefaultFetch<Impl>::startupStage()//@fetch流水级启动时需要完成的初始化操作 
 {
-    assert(priorityList.empty());
+    assert(priorityList.empty());//@初始化fetch启动前的各个信号和变量 
     resetStage();
 
     // Fetch needs to start fetching instructions at the very beginning,
     // so it must start up in active state.
-    switchToActive();
+    switchToActive();//@fetch流水级在启动时当前状态还是inactive，所以需要转换当前状态为active 
 }
 
 template<class Impl>
@@ -437,7 +439,7 @@ DefaultFetch<Impl>::drainResume()
 
 template <class Impl>
 void
-DefaultFetch<Impl>::drainSanityCheck() const
+DefaultFetch<Impl>::drainSanityCheck() const//@运行所有相关断言，确保流水线清空操作已经完成
 {
     assert(isDrained());
     assert(retryPkt == NULL);
@@ -552,7 +554,7 @@ DefaultFetch<Impl>::deactivateThread(ThreadID tid)
 
 template <class Impl>
 bool
-DefaultFetch<Impl>::lookupAndUpdateNextPC(
+DefaultFetch<Impl>::lookupAndUpdateNextPC(//@对分支指令进行分支预测返回目标地址和指令是否跳转 
         const DynInstPtr &inst, TheISA::PCState &nextPC)
 {
     // Do branch prediction check here.
@@ -568,7 +570,7 @@ DefaultFetch<Impl>::lookupAndUpdateNextPC(
     }
 
     ThreadID tid = inst->threadNumber;
-    predict_taken = branchPred->predict(inst->staticInst, inst->seqNum,
+    predict_taken = branchPred->predict(inst->staticInst, inst->seqNum, //@对该分支指令进行分支预测并返回其是否跳转
                                         nextPC, tid);
 
     if (predict_taken) {
@@ -584,8 +586,11 @@ DefaultFetch<Impl>::lookupAndUpdateNextPC(
     DPRINTF(Fetch, "[tid:%i] [sn:%llu] Branch at PC %#x "
             "predicted to go to %s\n",
             tid, inst->seqNum, inst->pcState().instAddr(), nextPC);
-    inst->setPredTarg(nextPC);
-    inst->setPredTaken(predict_taken);
+    //@将预测信息与该指令绑定
+    inst->setPredTarg(nextPC);          
+    inst->setPredTaken(predict_taken);  
+
+
 
     ++fetchedBranches;
 
@@ -606,7 +611,7 @@ DefaultFetch<Impl>::fetchCacheLine(Addr vaddr, ThreadID tid, Addr pc)
 
     // @todo: not sure if these should block translation.
     //AlphaDep
-    if (cacheBlocked) {
+    if (cacheBlocked) {//@如果cache被阻塞，则无法进行cache访问直接返回  
         DPRINTF(Fetch, "[tid:%i] Can't fetch cache line, cache blocked\n",
                 tid);
         return false;
@@ -638,8 +643,9 @@ DefaultFetch<Impl>::fetchCacheLine(Addr vaddr, ThreadID tid, Addr pc)
 
     memReq[tid] = mem_req;
 
+    //@开始地址转换，调用函数translateTiming(){arch/***/tlb.cc}  
     // Initiate translation of the icache block
-    fetchStatus[tid] = ItlbWait;
+    fetchStatus[tid] = ItlbWait; //@把线程状态改为等待tlb翻译完成
     FetchTranslation *trans = new FetchTranslation(this);
     cpu->itb->translateTiming(mem_req, cpu->thread[tid]->getTC(),
                               trans, BaseTLB::Execute);
@@ -691,8 +697,10 @@ DefaultFetch<Impl>::finishTranslation(const Fault &fault,
 
         fetchedCacheLines++;
 
+
+        //@ 向icache发送  取指请求
         // Access the cache.
-        if (!icachePort.sendTimingReq(data_pkt)) {
+        if (!icachePort.sendTimingReq(data_pkt)) {//@icache在忙，不能接受该请求
             assert(retryPkt == NULL);
             assert(retryTid == InvalidThreadID);
             DPRINTF(Fetch, "[tid:%i] Out of MSHRs!\n", tid);
@@ -701,7 +709,7 @@ DefaultFetch<Impl>::finishTranslation(const Fault &fault,
             retryPkt = data_pkt;
             retryTid = tid;
             cacheBlocked = true;
-        } else {
+        } else {                                 //@icache接受该请求
             DPRINTF(Fetch, "[tid:%i] Doing Icache access.\n", tid);
             DPRINTF(Activity, "[tid:%i] Activity: Waiting on I-cache "
                     "response.\n", tid);
@@ -711,6 +719,7 @@ DefaultFetch<Impl>::finishTranslation(const Fault &fault,
             // request is successfully sent
             ppFetchRequestSent->notify(mem_req);
         }
+
     } else {
         // Don't send an instruction to decode if we can't handle it.
         if (!(numInst < fetchWidth) || !(fetchQueue[tid].size() < fetchQueueSize)) {
@@ -891,7 +900,7 @@ DefaultFetch<Impl>::squash(const TheISA::PCState &newPC,
 
 template <class Impl>
 void
-DefaultFetch<Impl>::tick()
+DefaultFetch<Impl>::tick()//@取指： 事件执行函数；没有绑定事件，只是在流水线中单纯地被调用
 {
     list<ThreadID>::iterator threads = activeThreads->begin();
     list<ThreadID>::iterator end = activeThreads->end();
@@ -927,7 +936,7 @@ DefaultFetch<Impl>::tick()
     for (threadFetched = 0; threadFetched < numFetchingThreads;
          threadFetched++) {
         // Fetch each of the actively fetching threads.
-        fetch(status_change);
+        fetch(status_change);//@取指！！！
     }
 
     // Record number of instructions fetched this cycle for distribution.
@@ -963,8 +972,8 @@ DefaultFetch<Impl>::tick()
     while (available_insts != 0 && insts_to_decode < decodeWidth) {
         ThreadID tid = *tid_itr;
         if (!stalls[tid].decode && !fetchQueue[tid].empty()) {
-            const auto& inst = fetchQueue[tid].front();
-            toDecode->insts[toDecode->size++] = inst;
+            const auto& inst = fetchQueue[tid].front();   //@将指令从  取值队列中  弹出
+            toDecode->insts[toDecode->size++] = inst;     //@向译码阶段发送指令
             DPRINTF(Fetch, "[tid:%i] [sn:%llu] Sending instruction to decode "
                     "from fetch queue. Fetch queue size: %i.\n",
                     tid, inst->seqNum, fetchQueue[tid].size());
@@ -1107,7 +1116,7 @@ DefaultFetch<Impl>::buildInst(ThreadID tid, StaticInstPtr staticInst,
 
     // Create a new DynInst from the instruction fetched.
     DynInstPtr instruction =
-        new DynInst(staticInst, curMacroop, thisPC, nextPC, seq, cpu);
+        new DynInst(staticInst, curMacroop, thisPC, nextPC, seq, cpu);//@创建一个指令对象
     instruction->setTid(tid);
 
     instruction->setThreadState(cpu->thread[tid]);
@@ -1136,7 +1145,7 @@ DefaultFetch<Impl>::buildInst(ThreadID tid, StaticInstPtr staticInst,
     // Write the instruction to the first slot in the queue
     // that heads to decode.
     assert(numInst < fetchWidth);
-    fetchQueue[tid].push_back(instruction);
+    fetchQueue[tid].push_back(instruction);//@将指令放入  取指队列中
     assert(fetchQueue[tid].size() <= fetchQueueSize);
     DPRINTF(Fetch, "[tid:%i] Fetch queue entry created (%i/%i).\n",
             tid, fetchQueue[tid].size(), fetchQueueSize);
@@ -1150,7 +1159,7 @@ DefaultFetch<Impl>::buildInst(ThreadID tid, StaticInstPtr staticInst,
 
 template<class Impl>
 void
-DefaultFetch<Impl>::fetch(bool &status_change)
+DefaultFetch<Impl>::fetch(bool &status_change)//@取指
 {
     //////////////////////////////////////////
     // Start actual fetch
@@ -1326,7 +1335,7 @@ DefaultFetch<Impl>::fetch(bool &status_change)
 
             DynInstPtr instruction =
                 buildInst(tid, staticInst, curMacroop,
-                          thisPC, nextPC, true);
+                          thisPC, nextPC, true);//@  将指令  放入  取指队列中
 
             ppFetch->notify(instruction);
             numInst++;
@@ -1412,14 +1421,14 @@ DefaultFetch<Impl>::fetch(bool &status_change)
 
 template<class Impl>
 void
-DefaultFetch<Impl>::recvReqRetry()
+DefaultFetch<Impl>::recvReqRetry()//@cpu再次向icache发送  取指请求
 {
     if (retryPkt != NULL) {
         assert(cacheBlocked);
         assert(retryTid != InvalidThreadID);
         assert(fetchStatus[retryTid] == IcacheWaitRetry);
 
-        if (icachePort.sendTimingReq(retryPkt)) {
+        if (icachePort.sendTimingReq(retryPkt)) {//@ 向icache发送  取指请求
             fetchStatus[retryTid] = IcacheWaitResponse;
             // Notify Fetch Request probe when a retryPkt is successfully sent.
             // Note that notify must be called before retryPkt is set to NULL.
@@ -1669,7 +1678,7 @@ DefaultFetch<Impl>::profileStall(ThreadID tid) {
 
 template<class Impl>
 bool
-DefaultFetch<Impl>::IcachePort::recvTimingResp(PacketPtr pkt)
+DefaultFetch<Impl>::IcachePort::recvTimingResp(PacketPtr pkt)//@cpu接受 iache返回的指令
 {
     DPRINTF(O3CPU, "Fetch unit received timing\n");
     // We shouldn't ever get a cacheable block in Modified state
@@ -1682,7 +1691,7 @@ DefaultFetch<Impl>::IcachePort::recvTimingResp(PacketPtr pkt)
 
 template<class Impl>
 void
-DefaultFetch<Impl>::IcachePort::recvReqRetry()
+DefaultFetch<Impl>::IcachePort::recvReqRetry()//@cpu再次向icache发送  取指请求
 {
     fetch->recvReqRetry();
 }
