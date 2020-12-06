@@ -56,7 +56,7 @@
  * the alpha_impl.hh file for instructions.
  */
 template<class Impl>
-struct SimpleCPUPolicy
+struct SimpleCPUPolicy//@定义了O3中主要类的类型
 {
     /** Typedef for the freelist of registers. */
     typedef UnifiedFreeList FreeList;
@@ -65,7 +65,7 @@ struct SimpleCPUPolicy
     /** Typedef for the ROB. */
     typedef ::ROB<Impl> ROB;
     /** Typedef for the instruction queue/scheduler. */
-    typedef InstructionQueue<Impl> IQ;
+    typedef InstructionQueue<Impl> IQ;     //@指令队列的类型定义
     /** Typedef for the memory dependence unit. */
     typedef ::MemDepUnit<StoreSet, Impl> MemDepUnit;
     /** Typedef for the LSQ. */
@@ -85,22 +85,22 @@ struct SimpleCPUPolicy
     typedef DefaultCommit<Impl> Commit;
 
     /** The struct for communication between fetch and decode. */
-    typedef DefaultFetchDefaultDecode<Impl> FetchStruct;
+    typedef DefaultFetchDefaultDecode<Impl> FetchStruct;  //@ 与 取指 和 译码 阶段之间的数据传递相关的类型
 
     /** The struct for communication between decode and rename. */
-    typedef DefaultDecodeDefaultRename<Impl> DecodeStruct;
+    typedef DefaultDecodeDefaultRename<Impl> DecodeStruct;  //@ 与 译码  和 重命名阶段之间的数据传递相关的类型
 
     /** The struct for communication between rename and IEW. */
-    typedef DefaultRenameDefaultIEW<Impl> RenameStruct;
+    typedef DefaultRenameDefaultIEW<Impl> RenameStruct;   //@与 重命名 和 IEW 阶段之间的数据传递相关的类型
 
     /** The struct for communication between IEW and commit. */
-    typedef DefaultIEWDefaultCommit<Impl> IEWStruct;
+    typedef DefaultIEWDefaultCommit<Impl> IEWStruct;  //@与 IEW 和 提交 阶段之间的数据传递相关的类型
 
     /** The struct for communication within the IEW stage. */
-    typedef ::IssueStruct<Impl> IssueStruct;
+    typedef ::IssueStruct<Impl> IssueStruct;  //@与 IEW内部阶段之间的数据传递相关的类型
 
     /** The struct for all backwards communication. */
-    typedef TimeBufStruct<Impl> TimeStruct;
+    typedef TimeBufStruct<Impl> TimeStruct;   //@与  反向传播数据相关的类型
 
 };
 

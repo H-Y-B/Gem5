@@ -83,21 +83,21 @@ BaseO3CPU::regStats()
 template <class Impl>
 FullO3CPU<Impl>::FullO3CPU(DerivO3CPUParams *params)
     : BaseO3CPU(params),
-      itb(params->itb),
-      dtb(params->dtb),
-      tickEvent([this]{ tick(); }, "FullO3CPU tick",
+      itb(params->itb),//@赋值itb对象
+      dtb(params->dtb),//@赋值dtb对象
+      tickEvent([this]{ tick(); }, "FullO3CPU tick",  //@事件和执行函数绑定
                 false, Event::CPU_Tick_Pri),
-      threadExitEvent([this]{ exitThreads(); }, "FullO3CPU exit threads",
+      threadExitEvent([this]{ exitThreads(); }, "FullO3CPU exit threads",//@事件和执行函数绑定
                 false, Event::CPU_Exit_Pri),
 #ifndef NDEBUG
       instcount(0),
 #endif
       removeInstsThisCycle(false),
-      fetch(this, params),
-      decode(this, params),
-      rename(this, params),
-      iew(this, params),
-      commit(this, params),
+      fetch(this, params),   //@赋值取指对象
+      decode(this, params),  //@赋值译码对象
+      rename(this, params),  //@赋值重命名对象
+      iew(this, params),     //@赋值Issue/Execute/Writeback对象
+      commit(this, params),  //@赋值提交对象
 
       /* It is mandatory that all SMT threads use the same renaming mode as
        * they are sharing registers and rename */
@@ -516,7 +516,7 @@ FullO3CPU<Impl>::regStats()
 
 template <class Impl>
 void
-FullO3CPU<Impl>::tick()
+FullO3CPU<Impl>::tick()//@事件执行函数
 {
     DPRINTF(O3CPU, "\n\nFullO3CPU: Ticking main, FullO3CPU.\n");
     assert(!switchedOut());
@@ -534,7 +534,7 @@ FullO3CPU<Impl>::tick()
 
     rename.tick();
 
-    iew.tick();
+    iew.tick();//@Issue/Execute/Writeback
 
     commit.tick();
 
@@ -562,7 +562,7 @@ FullO3CPU<Impl>::tick()
             lastRunningCycle = curCycle();
             timesIdled++;
         } else {
-            schedule(tickEvent, clockEdge(Cycles(1)));
+            schedule(tickEvent, clockEdge(Cycles(1)));//@再次触发tickEvent，执行tick()
             DPRINTF(O3CPU, "Scheduling next tick!\n");
         }
     }

@@ -130,10 +130,10 @@ class FullO3CPU : public BaseO3CPU
   private:
 
     /** The tick event used for scheduling CPU ticks. */
-    EventFunctionWrapper tickEvent;
+    EventFunctionWrapper tickEvent;   //@事件声明
 
     /** The exit event used for terminating all ready-to-exit threads */
-    EventFunctionWrapper threadExitEvent;
+    EventFunctionWrapper threadExitEvent;  //@事件声明
 
     /** Schedule tick event, regardless of its current state. */
     void scheduleTickEvent(Cycles delay)
@@ -212,7 +212,7 @@ class FullO3CPU : public BaseO3CPU
     /** Ticks CPU, calling tick() on each stage, and checking the overall
      *  activity to see if the CPU should deschedule itself.
      */
-    void tick();
+    void tick();//@要与事件绑定的执行函数
 
     /** Initialize the CPU */
     void init() override;
