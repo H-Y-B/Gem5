@@ -1164,7 +1164,7 @@ DefaultFetch<Impl>::fetch(bool &status_change)//@取指
     //////////////////////////////////////////
     // Start actual fetch
     //////////////////////////////////////////
-    ThreadID tid = getFetchingThread();
+    ThreadID tid = getFetchingThread();//@根据取指策略，选择一个合适的线程来进行取指操作
 
     assert(!cpu->switchedOut());
 
@@ -1456,13 +1456,13 @@ DefaultFetch<Impl>::getFetchingThread()
 {
     if (numThreads > 1) {
         switch (fetchPolicy) {
-          case FetchPolicy::RoundRobin:
+          case FetchPolicy::RoundRobin://@取指策略1
             return roundRobin();
-          case FetchPolicy::IQCount:
+          case FetchPolicy::IQCount:   //@取指策略2
             return iqCount();
-          case FetchPolicy::LSQCount:
+          case FetchPolicy::LSQCount:  //@取指策略3
             return lsqCount();
-          case FetchPolicy::Branch:
+          case FetchPolicy::Branch:    //@取指策略4
             return branchCount();
           default:
             return InvalidThreadID;
@@ -1488,7 +1488,7 @@ DefaultFetch<Impl>::getFetchingThread()
 
 template<class Impl>
 ThreadID
-DefaultFetch<Impl>::roundRobin()
+DefaultFetch<Impl>::roundRobin()//@取指策略1
 {
     list<ThreadID>::iterator pri_iter = priorityList.begin();
     list<ThreadID>::iterator end      = priorityList.end();
@@ -1518,7 +1518,7 @@ DefaultFetch<Impl>::roundRobin()
 
 template<class Impl>
 ThreadID
-DefaultFetch<Impl>::iqCount()
+DefaultFetch<Impl>::iqCount()//@取指策略2
 {
     //sorted from lowest->highest
     std::priority_queue<unsigned,vector<unsigned>,
@@ -1555,7 +1555,7 @@ DefaultFetch<Impl>::iqCount()
 
 template<class Impl>
 ThreadID
-DefaultFetch<Impl>::lsqCount()
+DefaultFetch<Impl>::lsqCount()//@取指策略3
 {
     //sorted from lowest->highest
     std::priority_queue<unsigned,vector<unsigned>,
@@ -1591,7 +1591,7 @@ DefaultFetch<Impl>::lsqCount()
 
 template<class Impl>
 ThreadID
-DefaultFetch<Impl>::branchCount()
+DefaultFetch<Impl>::branchCount()//@取指策略4
 {
     panic("Branch Count Fetch policy unimplemented\n");
     return InvalidThreadID;
