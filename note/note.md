@@ -1,20 +1,28 @@
+问题：
+
+Drain的作用是什么？
+
+什么时候要Drain？
+
 
 
 
 ### power gating  
 
-	ref link: https://aijishu.com/a/1060000000120919
+ref link: https://aijishu.com/a/1060000000120919
 
 ### probe points
 
-	探测点
+探测点
 
 ### Event
 
-	gem5中所有和时序相关的操作都是由event来驱动的，比如tick、trap、writeback等等。
-	Event是event queue中的node，任何需要使用Event作为基类的子类需要重构虚函数Event中的process()以实现相应的event功能
-	
-	EventFuntionWrapper 
+gem5中所有和时序相关的操作都是由event来驱动的，比如tick、trap、writeback等等。
+Event是event queue中的node，任何需要使用Event作为基类的子类需要重构虚函数Event中的process()以实现相应的event功能
+
+EventFuntionWrapper 
+
+ref link: https://zhuanlan.zhihu.com/p/53476489  事件驱动模拟器
 
 ### PMU(power management unit)
 
@@ -42,3 +50,6 @@
 [Cache访存并发度解析建模](http://www.doc88.com/p-2746116203962.html)
 
 [VLIWDSP指令级精度模拟器的快速实现方法](https://www.doc88.com/p-9169449843731.html)
+
+[从gem5到ASIP，如何打造一款自己的交换芯片模拟器？](https://zhuanlan.zhihu.com/p/53476489) **事件驱动仿真器关键技术**
+
