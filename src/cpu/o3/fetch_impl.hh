@@ -401,6 +401,7 @@ DefaultFetch<Impl>::processCacheCompletion(PacketPtr pkt)
         return;
     }
 
+    //@将 指令 放入fetchbufer中
     memcpy(fetchBuffer[tid], pkt->getConstPtr<uint8_t>(), fetchBufferSize);
     fetchBufferValid[tid] = true;
 
@@ -422,6 +423,8 @@ DefaultFetch<Impl>::processCacheCompletion(PacketPtr pkt)
 
     pkt->req->setAccessLatency();
     cpu->ppInstAccessComplete->notify(pkt);
+
+    //@删除相关的状态和记录，因为icache访问成功所以memReq的记录可以被清除
     // Reset the mem req to NULL.
     delete pkt;
     memReq[tid] = NULL;
@@ -1234,7 +1237,9 @@ DefaultFetch<Impl>::fetch(bool &status_change)//@取指
 
         // Status is Idle, so fetch should do nothing.
         return;
-    }
+    }//@end if else ： fetchStatus
+    //@到此，从icahce获取的block放入fetchbuffer中
+
 
     ++fetchCycles;
 
@@ -1261,7 +1266,7 @@ DefaultFetch<Impl>::fetch(bool &status_change)//@取指
         reinterpret_cast<TheISA::MachInst *>(fetchBuffer[tid]);
 
     const unsigned numInsts = fetchBufferSize / instSize;
-    unsigned blkOffset = (fetchAddr - fetchBufferPC[tid]) / instSize;
+    unsigned blkOffset = (fetchAddr - fetchBufferPC[tid]) / instSize;//@指令在fetchbuffer中的偏移地址
 
     // Loop through instruction memory from the cache.
     // Keep issuing while fetchWidth is available and branch is not
@@ -1351,13 +1356,14 @@ DefaultFetch<Impl>::fetch(bool &status_change)//@取指
             // If we're branching after this instruction, quit fetching
             // from the same block.
             predictedBranch |= thisPC.branching();
-            predictedBranch |=
-                lookupAndUpdateNextPC(instruction, nextPC);
+            predictedBranch |= lookupAndUpdateNextPC(instruction, nextPC);
+            //@如果当前指令是分支指令，并且taken，那么predictedBranch就会变成true
+
             if (predictedBranch) {
                 DPRINTF(Fetch, "Branch detected with PC = %s\n", thisPC);
             }
 
-            newMacro |= thisPC.instAddr() != nextPC.instAddr();
+            newMacro |= thisPC.instAddr() != nextPC.instAddr();//@如果发生了   分支指令token导致新的指令和当前指令不在一个cacheblock中，则newMacro变为 true
 
             // Move to the next instruction, unless we have a branch.
             thisPC = nextPC;
@@ -1385,7 +1391,7 @@ DefaultFetch<Impl>::fetch(bool &status_change)//@取指
         // Re-evaluate whether the next instruction to fetch is in micro-op ROM
         // or not.
         inRom = isRomMicroPC(thisPC.microPC());
-    }
+    }//@ end while
 
     if (predictedBranch) {
         DPRINTF(Fetch, "[tid:%i] Done fetching, predicted branch "

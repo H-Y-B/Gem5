@@ -199,10 +199,10 @@ class DefaultFetch
 
   private:
     /** Fetch status. */
-    FetchStatus _status;
+    FetchStatus _status;//@取指单元的状态
 
     /** Per-thread status. */
-    ThreadStatus fetchStatus[Impl::MaxThreads];
+    ThreadStatus fetchStatus[Impl::MaxThreads];//@每个线程的取指状态
 
     /** Fetch policy. */
     FetchPolicy fetchPolicy;
